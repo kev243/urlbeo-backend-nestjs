@@ -8,7 +8,12 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class UpdateBioDto {
+export class UpdateNameAndBioDto {
+  @IsString()
+  @MinLength(1, { message: 'Name must be at least 1 characters long' })
+  @MaxLength(50, { message: 'Name cannot exceed 50 characters' })
+  name!: string;
+
   @IsString()
   @MinLength(1, { message: 'Bio must be at least 1 characters long' })
   @MaxLength(200, { message: 'Bio cannot exceed 200 characters' })

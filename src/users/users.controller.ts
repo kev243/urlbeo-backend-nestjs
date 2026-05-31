@@ -2,7 +2,7 @@ import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { ClerkAuthGuard } from '../guards/clerk-auth.guard';
 import { UsersService } from './users.service';
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator';
-import { UpdateBioDto, UpdateUsernameDto } from '../dto/user.dto';
+import { UpdateNameAndBioDto, UpdateUsernameDto } from '../dto/user.dto';
 import { SanitizeHtmlPipe } from '../pipes/sanitize-html.pipe';
 
 @Controller({ path: 'users', version: '1' })
@@ -15,12 +15,12 @@ export class UsersController {
     return this.usersService.syncAuthenticatedUser(userId);
   }
 
-  @Patch('bio')
-  updateBio(
+  @Patch('name-and-bio')
+  updateNameAndBio(
     @CurrentUserId() userId: string,
-    @Body(new SanitizeHtmlPipe()) dto: UpdateBioDto,
+    @Body(new SanitizeHtmlPipe()) dto: UpdateNameAndBioDto,
   ) {
-    return this.usersService.updateBio(userId, dto);
+    return this.usersService.updateNameAndBio(userId, dto);
   }
 
   @Patch('username')

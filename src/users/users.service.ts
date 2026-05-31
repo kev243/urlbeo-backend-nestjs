@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { logServiceError } from '../helpers/log-service';
 import { handlePrismaError } from '../helpers/handle-prisma-error';
 import { Users } from '../types/users.type';
-import { UpdateBioDto, UpdateUsernameDto } from '../dto/user.dto';
+import { UpdateNameAndBioDto, UpdateUsernameDto } from '../dto/user.dto';
 
 @Injectable()
 export class UsersService {
@@ -56,7 +56,10 @@ export class UsersService {
     }
   }
 
-  async updateBio(userId: string, dto: UpdateBioDto): Promise<Users> {
+  async updateNameAndBio(
+    userId: string,
+    dto: UpdateNameAndBioDto,
+  ): Promise<Users> {
     try {
       if (!userId) {
         throw new BadRequestException('User ID is required');
@@ -64,13 +67,13 @@ export class UsersService {
 
       const updatedUser = await this.prisma.user.update({
         where: { id: userId },
-        data: { bio: dto.bio },
+        data: { name: dto.name, bio: dto.bio },
       });
 
       return updatedUser;
     } catch (error) {
-      logServiceError('UsersService.updateBio', error);
-      throw handlePrismaError(error, 'Failed to update user bio');
+      logServiceError('UsersService.updateNameAndBio', error);
+      throw handlePrismaError(error, 'Failed to update user name and bio');
     }
   }
 
@@ -102,4 +105,6 @@ export class UsersService {
       throw handlePrismaError(error, 'Failed to update user username');
     }
   }
+
+  //TODO: add updateAvatarUrl
 }
