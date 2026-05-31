@@ -16,6 +16,46 @@ datasource db {
 model User {
   id    String  @id   // UUID provenant de clerk
   email     String   @unique
+  avatarUrl String?
+  profile   Profile?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Profile {
+  id        String  @id @default(cuid())
+  userId    String  @unique
+
+  username  String  @unique
+  bio       String?
+  title     String?
+  avatarUrl String?
+
+  links     Link[]
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model Link {
+  id        String  @id @default(cuid())
+  profileId String
+
+  title     String
+  url       String
+  icon      String?
+  isActive  Boolean @default(true)
+
+  position  Int
+
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId])
+  @@index([profileId, position])
 }
