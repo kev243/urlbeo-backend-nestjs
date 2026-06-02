@@ -11,7 +11,7 @@ import {
 import { LinksService } from './links.service';
 import { ClerkAuthGuard } from '../guards/clerk-auth.guard';
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator';
-import { CreateLinkDto } from '../dto/link.dto';
+import { CreateLinkDto, UpdateLinkPositionDto } from '../dto/link.dto';
 import { SanitizeHtmlPipe } from '../pipes/sanitize-html.pipe';
 
 @Controller({ path: 'links', version: '1' })
@@ -49,5 +49,14 @@ export class LinksController {
   ) {
     await this.linksService.deleteLink(linkId, userId);
     return { message: 'Link deleted successfully' };
+  }
+
+  @Patch(':id/position')
+  async updateLinkPosition(
+    @CurrentUserId() userId: string,
+    @Param('id') linkId: string,
+    @Body() dto: UpdateLinkPositionDto,
+  ) {
+    return this.linksService.updateLinkPosition(userId, linkId, dto.position);
   }
 }

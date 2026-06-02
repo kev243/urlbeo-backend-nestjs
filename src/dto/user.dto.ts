@@ -1,12 +1,5 @@
 import { Transform } from 'class-transformer';
-import {
-  IsObject,
-  IsOptional,
-  IsString,
-  Matches,
-  MaxLength,
-  MinLength,
-} from 'class-validator';
+import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
 
 export class UpdateNameAndBioDto {
   @IsString()

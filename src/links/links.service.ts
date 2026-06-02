@@ -140,4 +140,47 @@ export class LinksService {
       throw handlePrismaError(error, 'Failed to delete link');
     }
   }
+
+  async updateLinkPosition(
+    userId: string,
+    linkId: string,
+    newPosition: number,
+  ): Promise<Links[]> {
+    const links = await this.prisma.link.findMany({
+      where: {
+        userId,
+      },
+      orderBy: {
+        position: 'asc',
+      },
+    });
+
+    const currentIndex = links.findIndex((link) => link.id === linkId);
+
+    if (currentIndex === -1) {
+      throw new NotFoundException('Link not found');
+    }
+
+    if (newPosition < 0 || newPosition >= links.length) {
+      throw new BadRequestException('Invalid position');
+    }
+
+    const [movedLink] = links.splice(currentIndex, 1);
+    links.splice(newPosition, 0, movedLink);
+
+    const updatedLinks = await this.prisma.$transaction(
+      links.map((link, index) =>
+        this.prisma.link.update({
+          where: {
+            id: link.id,
+          },
+          data: {
+            position: index,
+          },
+        }),
+      ),
+    );
+
+    return updatedLinks;
+  }
 }

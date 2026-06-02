@@ -1,4 +1,12 @@
-import { IsNotEmpty, IsString, IsUrl, MaxLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsUrl,
+  MaxLength,
+  IsInt,
+  Min,
+} from 'class-validator';
+
 import { Transform } from 'class-transformer';
 
 export class CreateLinkDto {
@@ -17,4 +25,10 @@ export class CreateLinkDto {
   @MaxLength(2048)
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   url!: string;
+}
+
+export class UpdateLinkPositionDto {
+  @IsInt()
+  @Min(0)
+  position!: number;
 }
