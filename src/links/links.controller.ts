@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -39,5 +40,14 @@ export class LinksController {
   ) {
     const { isActive } = updateIsActiveDto;
     return this.linksService.updateIsActiveStatus(linkId, userId, isActive);
+  }
+
+  @Delete(':linkId')
+  async deleteLink(
+    @CurrentUserId() userId: string,
+    @Param('linkId') linkId: string,
+  ) {
+    await this.linksService.deleteLink(linkId, userId);
+    return { message: 'Link deleted successfully' };
   }
 }

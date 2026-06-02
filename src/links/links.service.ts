@@ -110,4 +110,34 @@ export class LinksService {
       throw handlePrismaError(error, 'Failed to update link status');
     }
   }
+
+  async deleteLink(linkId: string, userId: string): Promise<void> {
+    try {
+      if (!linkId) {
+        throw new BadRequestException('Link ID is required to delete a link');
+      }
+      if (!userId) {
+        throw new BadRequestException('User ID is required to delete a link');
+      }
+
+      const link = await this.prisma.link.findUnique({
+        where: { id: linkId },
+      });
+
+      if (!link) {
+        throw new NotFoundException('Link not found');
+      }
+
+      if (link.userId !== userId) {
+        throw new ForbiddenException('Unauthorized to delete this link');
+      }
+
+      await this.prisma.link.delete({
+        where: { id: linkId },
+      });
+    } catch (error) {
+      logServiceError('LinksService.deleteLink', error);
+      throw handlePrismaError(error, 'Failed to delete link');
+    }
+  }
 }
