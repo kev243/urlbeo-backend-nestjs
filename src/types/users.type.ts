@@ -12,3 +12,15 @@ export interface Users {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface mockUser {
+  id: 'user-123';
+  email: 'user@example.com';
+  isEmailVerified: true;
+  username: 'john-doe';
+  name: 'John Updated';
+  bio: 'Senior Developer';
+  avatarUrl: null;
+  createdAt: '2025-01-01T00:00:00Z';
+  updatedAt: '2025-01-15T10:30:00Z';
+}
