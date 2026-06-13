@@ -10,6 +10,7 @@ import { logServiceError } from '../helpers/log-service';
 import { handlePrismaError } from '../helpers/handle-prisma-error';
 import { Links } from '../types/links.type';
 import { UsersService } from '../users/users.service';
+import { LinkDto } from '../dto/link.dto';
 
 @Injectable()
 export class LinksService {
@@ -18,10 +19,7 @@ export class LinksService {
     private readonly usersService: UsersService,
   ) {}
 
-  async createLink(
-    userId: string,
-    createLinkDto: CreateLinkDto,
-  ): Promise<Links> {
+  async createLink(userId: string, createLinkDto: LinkDto): Promise<Links> {
     try {
       await this.usersService.ensureUserExists(userId);
 
@@ -56,7 +54,7 @@ export class LinksService {
   async updateLink(
     linkId: string,
     userId: string,
-    updateLinkDto: CreateLinkDto,
+    updateLinkDto: LinkDto,
   ): Promise<Links> {
     try {
       await this.usersService.ensureUserExists(userId);
