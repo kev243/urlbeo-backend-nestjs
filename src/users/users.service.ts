@@ -70,6 +70,27 @@ export class UsersService {
     }
   }
 
+  async getUserById(userId: string): Promise<Users> {
+    try {
+      if (!userId) {
+        throw new BadRequestException('User ID is required');
+      }
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      logServiceError('UsersService.getUserById', error);
+      throw handlePrismaError(error, 'Failed to get user by ID');
+    }
+  }
+
   async updateNameAndBio(
     userId: string,
     dto: UpdateNameAndBioDto,

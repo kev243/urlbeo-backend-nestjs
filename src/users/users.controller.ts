@@ -19,6 +19,11 @@ import { SanitizeHtmlPipe } from '../pipes/sanitize-html.pipe';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('me')
+  async getCurrentUser(@CurrentUserId() userId: string) {
+    return this.usersService.getUserById(userId);
+  }
+
   @Get('sync')
   async syncAuthenticatedUser(@CurrentUserId() userId: string) {
     return this.usersService.syncAuthenticatedUser(userId);

@@ -95,6 +95,19 @@ describe('UsersService', () => {
     });
   });
 
+  describe('getUserById', () => {
+    it('throws BadRequestException when userId is missing', async () => {
+      await expect(service.getUserById('')).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('returns user when user exists', async () => {
+      const result = await service.getUserById('user-1');
+      expect(result).toEqual(sampleUser);
+    });
+  });
+
   describe('syncAuthenticatedUser', () => {
     it('throws BadRequestException when userId is missing', async () => {
       await expect(service.syncAuthenticatedUser('')).rejects.toBeInstanceOf(
