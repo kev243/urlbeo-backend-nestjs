@@ -5,11 +5,13 @@ import {
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service';
+import { UsersService } from '../users/users.service';
 import { LinksService } from './links.service';
 
 describe('LinksService', () => {
   let service: LinksService;
   let prismaMock: any;
+  let usersServiceMock: any;
 
   const sampleLink = {
     id: 'link-1',
@@ -35,12 +37,25 @@ describe('LinksService', () => {
       $transaction: jest.fn(),
     };
 
+    usersServiceMock = {
+      ensureUserExists: jest.fn().mockImplementation((userId: string) => {
+        if (!userId) {
+          return Promise.reject(new BadRequestException('User ID is required'));
+        }
+        return Promise.resolve(undefined);
+      }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LinksService,
         {
           provide: PrismaService,
           useValue: prismaMock,
+        },
+        {
+          provide: UsersService,
+          useValue: usersServiceMock,
         },
       ],
     }).compile();
@@ -65,6 +80,7 @@ describe('LinksService', () => {
         url: 'https://example.com',
       });
 
+      expect(usersServiceMock.ensureUserExists).toHaveBeenCalledWith('user-1');
       expect(prismaMock.link.findFirst).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
         orderBy: { position: 'desc' },
@@ -94,6 +110,7 @@ describe('LinksService', () => {
 
       const result = await service.getLinksByUserId('user-1');
 
+      expect(usersServiceMock.ensureUserExists).toHaveBeenCalledWith('user-1');
       expect(prismaMock.link.findMany).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
         orderBy: { position: 'asc' },
@@ -122,6 +139,7 @@ describe('LinksService', () => {
         false,
       );
 
+      expect(usersServiceMock.ensureUserExists).toHaveBeenCalledWith('user-1');
       expect(prismaMock.link.findUnique).toHaveBeenCalledWith({
         where: { id: 'link-1' },
       });
@@ -179,6 +197,7 @@ describe('LinksService', () => {
         service.deleteLink('link-1', 'user-1'),
       ).resolves.toBeUndefined();
 
+      expect(usersServiceMock.ensureUserExists).toHaveBeenCalledWith('user-1');
       expect(prismaMock.link.findUnique).toHaveBeenCalledWith({
         where: { id: 'link-1' },
       });
@@ -235,6 +254,7 @@ describe('LinksService', () => {
 
       const result = await service.updateLinkPosition('user-1', 'link-2', 0);
 
+      expect(usersServiceMock.ensureUserExists).toHaveBeenCalledWith('user-1');
       expect(prismaMock.link.findMany).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
         orderBy: { position: 'asc' },
