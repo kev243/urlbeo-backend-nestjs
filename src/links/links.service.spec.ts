@@ -188,6 +188,77 @@ describe('LinksService', () => {
     });
   });
 
+  describe('updateLink', () => {
+    it('updates link title and url', async () => {
+      const updatedLink = {
+        ...sampleLink,
+        title: 'Updated',
+        url: 'https://updated.com',
+      };
+      prismaMock.link.findUnique.mockResolvedValue(sampleLink);
+      prismaMock.link.update.mockResolvedValue(updatedLink);
+
+      const result = await service.updateLink('link-1', 'user-1', {
+        title: 'Updated',
+        url: 'https://updated.com',
+      });
+
+      expect(usersServiceMock.ensureUserExists).toHaveBeenCalledWith('user-1');
+      expect(prismaMock.link.findUnique).toHaveBeenCalledWith({
+        where: { id: 'link-1' },
+      });
+      expect(prismaMock.link.update).toHaveBeenCalledWith({
+        where: { id: 'link-1' },
+        data: { title: 'Updated', url: 'https://updated.com' },
+      });
+      expect(result.title).toBe('Updated');
+      expect(result.url).toBe('https://updated.com');
+    });
+
+    it('throws if linkId is missing', async () => {
+      await expect(
+        service.updateLink('', 'user-1', {
+          title: 'Test',
+          url: 'https://example.com',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('throws if userId is missing', async () => {
+      await expect(
+        service.updateLink('link-1', '', {
+          title: 'Test',
+          url: 'https://example.com',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('throws if link is not found', async () => {
+      prismaMock.link.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.updateLink('link-1', 'user-1', {
+          title: 'Test',
+          url: 'https://example.com',
+        }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('throws if link belongs to another user', async () => {
+      prismaMock.link.findUnique.mockResolvedValue({
+        ...sampleLink,
+        userId: 'user-2',
+      });
+
+      await expect(
+        service.updateLink('link-1', 'user-1', {
+          title: 'Test',
+          url: 'https://example.com',
+        }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
+    });
+  });
+
   describe('deleteLink', () => {
     it('deletes link when it belongs to user', async () => {
       prismaMock.link.findUnique.mockResolvedValue(sampleLink);

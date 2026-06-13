@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateLinkDto } from '../dto/link.dto';
+
 import { logServiceError } from '../helpers/log-service';
 import { handlePrismaError } from '../helpers/handle-prisma-error';
 import { Links } from '../types/links.type';
@@ -50,6 +50,43 @@ export class LinksService {
     } catch (error) {
       logServiceError('LinksService.createLink', error);
       throw handlePrismaError(error, 'Failed to create link');
+    }
+  }
+
+  async updateLink(
+    linkId: string,
+    userId: string,
+    updateLinkDto: CreateLinkDto,
+  ): Promise<Links> {
+    try {
+      await this.usersService.ensureUserExists(userId);
+
+      if (!linkId) {
+        throw new BadRequestException('Link ID is required to update a link');
+      }
+
+      const link = await this.prisma.link.findUnique({
+        where: { id: linkId },
+      });
+
+      if (!link) {
+        throw new NotFoundException('Link not found');
+      }
+
+      if (link.userId !== userId) {
+        throw new ForbiddenException('Unauthorized to update this link');
+      }
+
+      return await this.prisma.link.update({
+        where: { id: linkId },
+        data: {
+          title: updateLinkDto.title,
+          url: updateLinkDto.url,
+        },
+      });
+    } catch (error) {
+      logServiceError('LinksService.updateLink', error);
+      throw handlePrismaError(error, 'Failed to update link');
     }
   }
 

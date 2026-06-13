@@ -9,7 +9,7 @@ import {
 
 import { Transform } from 'class-transformer';
 
-export class CreateLinkDto {
+export class LinkDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(80)

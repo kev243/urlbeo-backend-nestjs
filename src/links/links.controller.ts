@@ -11,7 +11,7 @@ import {
 import { LinksService } from './links.service';
 import { ClerkAuthGuard } from '../guards/clerk-auth.guard';
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator';
-import { CreateLinkDto, UpdateLinkPositionDto } from '../dto/link.dto';
+import { LinkDto, UpdateLinkPositionDto } from '../dto/link.dto';
 import { SanitizeHtmlPipe } from '../pipes/sanitize-html.pipe';
 
 @Controller({ path: 'links', version: '1' })
@@ -22,7 +22,7 @@ export class LinksController {
   @Post('create')
   async createLink(
     @CurrentUserId() userId: string,
-    @Body(new SanitizeHtmlPipe()) createLinkDto: CreateLinkDto,
+    @Body(new SanitizeHtmlPipe()) createLinkDto: LinkDto,
   ) {
     return this.linksService.createLink(userId, createLinkDto);
   }
@@ -30,6 +30,15 @@ export class LinksController {
   @Get()
   async getLinksByUserId(@CurrentUserId() userId: string) {
     return this.linksService.getLinksByUserId(userId);
+  }
+
+  @Patch(':linkId')
+  async updateLink(
+    @CurrentUserId() userId: string,
+    @Param('linkId') linkId: string,
+    @Body(new SanitizeHtmlPipe()) updateLinkDto: LinkDto,
+  ) {
+    return this.linksService.updateLink(linkId, userId, updateLinkDto);
   }
 
   @Patch(':linkId/update-status')
