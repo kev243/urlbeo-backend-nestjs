@@ -20,11 +20,22 @@ export class UsersService {
     private readonly storageService: StorageService,
   ) {}
 
+  async ensureUserExists(userId: string): Promise<void> {
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
+    }
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+  }
+
   async syncAuthenticatedUser(userId: string): Promise<Users> {
     try {
-      if (!userId) {
-        throw new BadRequestException('User ID is required');
-      }
+      await this.ensureUserExists(userId);
 
       const clerkUser = await this.clerkClient.users.getUser(userId);
 
@@ -64,9 +75,7 @@ export class UsersService {
     dto: UpdateNameAndBioDto,
   ): Promise<Users> {
     try {
-      if (!userId) {
-        throw new BadRequestException('User ID is required');
-      }
+      await this.ensureUserExists(userId);
 
       const updatedUser = await this.prisma.user.update({
         where: { id: userId },
@@ -82,9 +91,7 @@ export class UsersService {
 
   async updateUsername(userId: string, dto: UpdateUsernameDto): Promise<Users> {
     try {
-      if (!userId) {
-        throw new BadRequestException('User ID is required');
-      }
+      await this.ensureUserExists(userId);
       const normalizedUsername = dto.username.toLowerCase().trim();
 
       const existingUser = await this.prisma.user.findUnique({
@@ -114,20 +121,10 @@ export class UsersService {
     avatar: Express.Multer.File,
   ): Promise<{ url: string }> {
     try {
-      if (!userId) {
-        throw new BadRequestException('User ID is required');
-      }
+      await this.ensureUserExists(userId);
 
       if (!avatar) {
         throw new BadRequestException('Avatar file is required');
-      }
-
-      const user = await this.prisma.user.findUnique({
-        where: { id: userId },
-      });
-
-      if (!user) {
-        throw new NotFoundException('User not found');
       }
 
       const avatarUrl = await this.storageService.uploadAvatar(userId, avatar);

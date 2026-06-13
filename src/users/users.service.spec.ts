@@ -31,7 +31,12 @@ describe('UsersService', () => {
       user: {
         upsert: jest.fn(),
         update: jest.fn(),
-        findUnique: jest.fn(),
+        findUnique: jest.fn((args: any) => {
+          if (args.where?.id) {
+            return Promise.resolve(sampleUser);
+          }
+          return Promise.resolve(null);
+        }),
       },
     };
 
@@ -68,6 +73,26 @@ describe('UsersService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('ensureUserExists', () => {
+    it('throws BadRequestException when userId is missing', async () => {
+      await expect(service.ensureUserExists('')).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('throws NotFoundException when user does not exist', async () => {
+      prismaMock.user.findUnique.mockResolvedValueOnce(null);
+
+      await expect(service.ensureUserExists('user-1')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('resolves when user exists', async () => {
+      await expect(service.ensureUserExists('user-1')).resolves.toBeUndefined();
+    });
   });
 
   describe('syncAuthenticatedUser', () => {
@@ -164,7 +189,12 @@ describe('UsersService', () => {
     });
 
     it('normalizes and updates username', async () => {
-      prismaMock.user.findUnique.mockResolvedValue(null);
+      prismaMock.user.findUnique.mockImplementation((args: any) => {
+        if (args.where?.username === 'newusername') {
+          return Promise.resolve(null);
+        }
+        return Promise.resolve(sampleUser);
+      });
       const updatedUser = { ...sampleUser, username: 'newusername' };
       prismaMock.user.update.mockResolvedValue(updatedUser);
 

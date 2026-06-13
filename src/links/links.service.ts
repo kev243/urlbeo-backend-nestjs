@@ -9,19 +9,21 @@ import { CreateLinkDto } from '../dto/link.dto';
 import { logServiceError } from '../helpers/log-service';
 import { handlePrismaError } from '../helpers/handle-prisma-error';
 import { Links } from '../types/links.type';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class LinksService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly usersService: UsersService,
+  ) {}
 
   async createLink(
     userId: string,
     createLinkDto: CreateLinkDto,
   ): Promise<Links> {
     try {
-      if (!userId) {
-        throw new BadRequestException('User ID is required to create a link');
-      }
+      await this.usersService.ensureUserExists(userId);
 
       const lastLink = await this.prisma.link.findFirst({
         where: {
@@ -53,9 +55,7 @@ export class LinksService {
 
   async getLinksByUserId(userId: string): Promise<Links[]> {
     try {
-      if (!userId) {
-        throw new BadRequestException('User ID is required to retrieve links');
-      }
+      await this.usersService.ensureUserExists(userId);
       return await this.prisma.link.findMany({
         where: {
           userId,
@@ -75,14 +75,10 @@ export class LinksService {
     isActive: boolean,
   ): Promise<Links> {
     try {
+      await this.usersService.ensureUserExists(userId);
       if (!linkId) {
         throw new BadRequestException(
           'Link ID is required to update link status',
-        );
-      }
-      if (!userId) {
-        throw new BadRequestException(
-          'User ID is required to update link status',
         );
       }
 
@@ -113,11 +109,10 @@ export class LinksService {
 
   async deleteLink(linkId: string, userId: string): Promise<void> {
     try {
+      await this.usersService.ensureUserExists(userId);
+
       if (!linkId) {
         throw new BadRequestException('Link ID is required to delete a link');
-      }
-      if (!userId) {
-        throw new BadRequestException('User ID is required to delete a link');
       }
 
       const link = await this.prisma.link.findUnique({
@@ -146,6 +141,8 @@ export class LinksService {
     linkId: string,
     newPosition: number,
   ): Promise<Links[]> {
+    await this.usersService.ensureUserExists(userId);
+
     const links = await this.prisma.link.findMany({
       where: {
         userId,
