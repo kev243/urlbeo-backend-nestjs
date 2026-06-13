@@ -3,18 +3,21 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { logServiceError } from '../helpers/log-service';
 import { handlePrismaError } from '../helpers/handle-prisma-error';
 import { Users } from '../types/users.type';
 import { UpdateNameAndBioDto, UpdateUsernameDto } from '../dto/user.dto';
+import { StorageService } from '../storage/storage.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject('ClerkClient') private readonly clerkClient: any,
+    private readonly storageService: StorageService,
   ) {}
 
   async syncAuthenticatedUser(userId: string): Promise<Users> {
@@ -106,5 +109,37 @@ export class UsersService {
     }
   }
 
-  //TODO: add updateAvatarUrl
+  async updateUserAvatarUrl(
+    userId: string,
+    avatar: Express.Multer.File,
+  ): Promise<{ url: string }> {
+    try {
+      if (!userId) {
+        throw new BadRequestException('User ID is required');
+      }
+
+      if (!avatar) {
+        throw new BadRequestException('Avatar file is required');
+      }
+
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      const avatarUrl = await this.storageService.uploadAvatar(userId, avatar);
+
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { avatarUrl: avatarUrl },
+      });
+      return { url: avatarUrl };
+    } catch (error) {
+      logServiceError('UsersService.updateUserAvatarUrl', error);
+      throw handlePrismaError(error, 'Failed to update user avatar URL');
+    }
+  }
 }

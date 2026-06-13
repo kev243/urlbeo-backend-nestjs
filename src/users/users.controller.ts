@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ClerkAuthGuard } from '../guards/clerk-auth.guard';
 import { UsersService } from './users.service';
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator';
@@ -16,7 +25,7 @@ export class UsersController {
   }
 
   @Patch('name-and-bio')
-  updateNameAndBio(
+  async updateNameAndBio(
     @CurrentUserId() userId: string,
     @Body(new SanitizeHtmlPipe()) dto: UpdateNameAndBioDto,
   ) {
@@ -24,10 +33,19 @@ export class UsersController {
   }
 
   @Patch('username')
-  updateUsername(
+  async updateUsername(
     @CurrentUserId() userId: string,
     @Body(new SanitizeHtmlPipe()) dto: UpdateUsernameDto,
   ) {
     return this.usersService.updateUsername(userId, dto);
+  }
+
+  @Patch('avatar')
+  @UseInterceptors(FileInterceptor('avatar'))
+  async updateUserAvatarUrl(
+    @CurrentUserId() userId: string,
+    @UploadedFile() avatar: Express.Multer.File,
+  ) {
+    return this.usersService.updateUserAvatarUrl(userId, avatar);
   }
 }
