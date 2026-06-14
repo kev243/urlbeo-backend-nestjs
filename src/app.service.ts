@@ -23,6 +23,10 @@ export class AppService {
         url: '/health',
         description: 'Use this endpoint to check the API status.',
       },
+      documentation: {
+        url: '/api',
+        description: 'Interactive API documentation with Swagger UI.',
+      },
     };
   }
   getHealth() {
