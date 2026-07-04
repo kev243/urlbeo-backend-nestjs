@@ -9,10 +9,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { LinksService } from './links.service';
-import { ClerkAuthGuard } from '../guards/clerk-auth.guard';
+import { ClerkAuthGuard } from '../common/guards/clerk-auth.guard';
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator';
 import { LinkDto, UpdateLinkPositionDto } from '../dto/link.dto';
-import { SanitizeHtmlPipe } from '../pipes/sanitize-html.pipe';
+import { SanitizeHtmlPipe } from '../common/pipes/sanitize-html.pipe';
 import {
   ApiTags,
   ApiOperation,
@@ -30,6 +30,7 @@ import {
   updateLinkStatusRequestExample,
   updateLinkPositionRequestExample,
 } from './swagger-examples';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller({ path: 'links', version: '1' })
 @UseGuards(ClerkAuthGuard)
@@ -37,6 +38,7 @@ import {
 export class LinksController {
   constructor(private readonly linksService: LinksService) {}
 
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Post('create')
   @ApiOperation({
     summary: 'Create a new link',
@@ -167,6 +169,7 @@ export class LinksController {
     return this.linksService.updateIsActiveStatus(linkId, userId, isActive);
   }
 
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Delete(':linkId')
   @ApiOperation({
     summary: 'Delete a link',

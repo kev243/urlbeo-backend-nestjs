@@ -8,11 +8,11 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ClerkAuthGuard } from '../guards/clerk-auth.guard';
+import { ClerkAuthGuard } from '../common/guards/clerk-auth.guard';
 import { UsersService } from './users.service';
 import { CurrentUserId } from '../common/decorators/current-user-id.decorator';
 import { UpdateNameAndBioDto, UpdateUsernameDto } from '../dto/user.dto';
-import { SanitizeHtmlPipe } from '../pipes/sanitize-html.pipe';
+import { SanitizeHtmlPipe } from '../common/pipes/sanitize-html.pipe';
 import {
   ApiBody,
   ApiConflictResponse,
@@ -29,6 +29,7 @@ import {
   updateNameAndBioRequestExample,
   updateUsernameRequestExample,
 } from './swagger-examples';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller({ path: 'users', version: '1' })
 @UseGuards(ClerkAuthGuard)
@@ -108,6 +109,7 @@ export class UsersController {
   @ApiNotFoundResponse({
     description: 'User not found in database',
   })
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   async updateNameAndBio(
     @CurrentUserId() userId: string,
     @Body(new SanitizeHtmlPipe()) dto: UpdateNameAndBioDto,
@@ -115,6 +117,7 @@ export class UsersController {
     return this.usersService.updateNameAndBio(userId, dto);
   }
 
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Patch('username')
   @ApiOperation({
     summary: 'Update user username',
@@ -152,6 +155,7 @@ export class UsersController {
     return this.usersService.updateUsername(userId, dto);
   }
 
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Patch('avatar')
   @UseInterceptors(FileInterceptor('avatar'))
   @ApiOperation({
