@@ -1,5 +1,6 @@
 'use strict';
 
+// New Relic agent configuration
 const appName = process.env.NEW_RELIC_APP_NAME || 'urlbeo-backend';
 
 module.exports = {
