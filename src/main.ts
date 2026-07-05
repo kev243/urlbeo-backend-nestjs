@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
+import "./instrument";
 
 const corsOrigins = process.env.CORS_ORIGINS?.split(',') ?? [];
 if (corsOrigins.length === 0) {

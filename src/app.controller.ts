@@ -24,4 +24,9 @@ export class AppController {
   check() {
     return this.health.check([]);
   }
+
+  @Get('/debug-sentry')
+  getError() {
+    throw new Error('My first Sentry error!');
+  }
 }

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { SentryModule } from '@sentry/nestjs/setup';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -13,6 +14,8 @@ import { TerminusModule } from '@nestjs/terminus';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
+import { APP_FILTER } from '@nestjs/core';
+import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import {
   makeCounterProvider,
   makeHistogramProvider,
@@ -20,6 +23,7 @@ import {
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     PrometheusModule.register({
       path: '/metrics',
       defaultMetrics: {
@@ -111,6 +115,10 @@ import {
     {
       provide: APP_INTERCEPTOR,
       useClass: MetricsInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter,
     },
   ],
 })
