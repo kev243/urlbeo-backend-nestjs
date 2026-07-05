@@ -10,9 +10,22 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { StorageModule } from './storage/storage.module';
 import { LoggerModule } from 'nestjs-pino';
 import { TerminusModule } from '@nestjs/terminus';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
+import {
+  makeCounterProvider,
+  makeHistogramProvider,
+} from '@willsoto/nestjs-prometheus';
 
 @Module({
   imports: [
+    PrometheusModule.register({
+      path: '/metrics',
+      defaultMetrics: {
+        enabled: true, // CPU, mémoire, event loop, GC Node.js automatiques
+      },
+    }),
     LoggerModule.forRoot({
       pinoHttp: {
         level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
@@ -79,10 +92,25 @@ import { TerminusModule } from '@nestjs/terminus';
   ],
   controllers: [AppController],
   providers: [
+    makeCounterProvider({
+      name: 'http_requests_total',
+      help: 'Total number of HTTP requests',
+      labelNames: ['method', 'path', 'status'],
+    }),
+    makeHistogramProvider({
+      name: 'http_request_duration_seconds',
+      help: 'HTTP request duration in seconds',
+      labelNames: ['method', 'path', 'status'],
+      buckets: [0.01, 0.05, 0.1, 0.3, 0.5, 1, 2, 5],
+    }),
     AppService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MetricsInterceptor,
     },
   ],
 })

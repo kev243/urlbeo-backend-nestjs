@@ -1,0 +1,13 @@
+route:
+  receiver: discord
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 1h
+
+receivers:
+  - name: discord
+    discord_configs:
+      - webhook_url: 'REMPLACE_PAR_LE_WEBHOOK_DISCORD'
+        send_resolved: true
+        title: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}'
+        message: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ .Annotations.description }}{{ end }}"
