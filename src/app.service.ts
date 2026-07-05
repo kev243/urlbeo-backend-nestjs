@@ -34,6 +34,10 @@ export class AppService {
       status: 'ok',
       service: 'urlbeo-api',
       version: '1.0.0',
+      checks: {
+        liveness: '/health/live',
+        readiness: '/health/ready',
+      },
       timestamp: new Date().toISOString(),
     };
   }
