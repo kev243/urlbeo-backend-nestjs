@@ -70,6 +70,29 @@ $ mau deploy
 
 With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
+## Observability on Heroku
+
+This project is prepared to run on Heroku with New Relic for logs, metrics, and dashboards.
+
+Required Heroku config vars:
+
+- `DATABASE_URL`
+- `NODE_ENV=production`
+- `NEW_RELIC_LICENSE_KEY`
+- `NEW_RELIC_APP_NAME=urlbeo-backend`
+- `NEW_RELIC_LOG_LEVEL=info`
+- `SENTRY_DSN`
+- `SENTRY_ENVIRONMENT=production`
+- `SENTRY_RELEASE`
+- `SENTRY_SERVICE=urlbeo-backend`
+- `CORS_ORIGINS`
+
+Notes:
+
+- `newrelic.js` is loaded first in `src/main.ts`, so the agent can instrument the app from startup.
+- `Procfile` uses `npm run start:prod`, which points to the compiled Nest entry point.
+- Logs remain available through Heroku, and New Relic receives the application telemetry and dashboards.
+
 ## Resources
 
 Check out a few resources that may come in handy when working with NestJS:

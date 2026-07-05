@@ -1,10 +1,11 @@
+import 'newrelic';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
-import "./instrument";
+import './instrument';
 
 const corsOrigins = process.env.CORS_ORIGINS?.split(',') ?? [];
 if (corsOrigins.length === 0) {
