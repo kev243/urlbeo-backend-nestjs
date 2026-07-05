@@ -20,6 +20,7 @@ import {
   makeCounterProvider,
   makeHistogramProvider,
 } from '@willsoto/nestjs-prometheus';
+import { PublicModule } from './public/public.module';
 
 @Module({
   imports: [
@@ -93,6 +94,7 @@ import {
     UsersModule,
     LinksModule,
     StorageModule,
+    PublicModule,
   ],
   controllers: [AppController],
   providers: [
