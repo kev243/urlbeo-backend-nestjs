@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { logServiceError } from '../helpers/log-service';
 import { handlePrismaError } from '../helpers/handle-prisma-error';
+import { captureServiceError } from '../helpers/sentry-service-error';
 import { Users } from '../types/users.type';
 import { UpdateNameAndBioDto, UpdateUsernameDto } from '../dto/user.dto';
 import { StorageService } from '../storage/storage.service';
@@ -65,6 +66,12 @@ export class UsersService {
 
       return user;
     } catch (error) {
+      captureServiceError(error, {
+        service: 'users',
+        operation: 'syncAuthenticatedUser',
+        userId,
+      });
+
       logServiceError('UsersService.syncAuthenticatedUser', error);
       throw handlePrismaError(error, 'Failed to sync authenticated user');
     }
@@ -86,6 +93,12 @@ export class UsersService {
 
       return user;
     } catch (error) {
+      captureServiceError(error, {
+        service: 'users',
+        operation: 'getUserById',
+        userId,
+      });
+
       logServiceError('UsersService.getUserById', error);
       throw handlePrismaError(error, 'Failed to get user by ID');
     }
@@ -105,6 +118,16 @@ export class UsersService {
 
       return updatedUser;
     } catch (error) {
+      captureServiceError(error, {
+        service: 'users',
+        operation: 'updateNameAndBio',
+        userId,
+        context: {
+          hasName: typeof dto?.name === 'string' && dto.name.length > 0,
+          hasBio: typeof dto?.bio === 'string' && dto.bio.length > 0,
+        },
+      });
+
       logServiceError('UsersService.updateNameAndBio', error);
       throw handlePrismaError(error, 'Failed to update user name and bio');
     }
@@ -132,6 +155,16 @@ export class UsersService {
 
       return updatedUser;
     } catch (error) {
+      captureServiceError(error, {
+        service: 'users',
+        operation: 'updateUsername',
+        userId,
+        context: {
+          hasUsername:
+            typeof dto?.username === 'string' && dto.username.length > 0,
+        },
+      });
+
       logServiceError('UsersService.updateUsername', error);
       throw handlePrismaError(error, 'Failed to update user username');
     }
@@ -156,6 +189,16 @@ export class UsersService {
       });
       return { url: avatarUrl };
     } catch (error) {
+      captureServiceError(error, {
+        service: 'users',
+        operation: 'updateUserAvatarUrl',
+        userId,
+        context: {
+          hasAvatar: !!avatar,
+          avatarMimeType: avatar?.mimetype ?? null,
+        },
+      });
+
       logServiceError('UsersService.updateUserAvatarUrl', error);
       throw handlePrismaError(error, 'Failed to update user avatar URL');
     }

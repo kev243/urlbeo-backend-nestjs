@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 import { logServiceError } from '../helpers/log-service';
 import { handlePrismaError } from '../helpers/handle-prisma-error';
+import { captureServiceError } from '../helpers/sentry-service-error';
 import { Links } from '../types/links.type';
 import { UsersService } from '../users/users.service';
 import { LinkDto } from '../dto/link.dto';
@@ -46,6 +47,20 @@ export class LinksService {
 
       return link;
     } catch (error) {
+      captureServiceError(error, {
+        service: 'links',
+        operation: 'createLink',
+        userId,
+        context: {
+          hasTitle:
+            typeof createLinkDto?.title === 'string' &&
+            createLinkDto.title.length > 0,
+          hasUrl:
+            typeof createLinkDto?.url === 'string' &&
+            createLinkDto.url.length > 0,
+        },
+      });
+
       logServiceError('LinksService.createLink', error);
       throw handlePrismaError(error, 'Failed to create link');
     }
@@ -83,6 +98,21 @@ export class LinksService {
         },
       });
     } catch (error) {
+      captureServiceError(error, {
+        service: 'links',
+        operation: 'updateLink',
+        userId,
+        context: {
+          linkId,
+          hasTitle:
+            typeof updateLinkDto?.title === 'string' &&
+            updateLinkDto.title.length > 0,
+          hasUrl:
+            typeof updateLinkDto?.url === 'string' &&
+            updateLinkDto.url.length > 0,
+        },
+      });
+
       logServiceError('LinksService.updateLink', error);
       throw handlePrismaError(error, 'Failed to update link');
     }
@@ -100,6 +130,12 @@ export class LinksService {
         },
       });
     } catch (error) {
+      captureServiceError(error, {
+        service: 'links',
+        operation: 'getLinksByUserId',
+        userId,
+      });
+
       logServiceError('LinksService.getLinksByUserId', error);
       throw handlePrismaError(error, 'Failed to retrieve links');
     }
@@ -137,6 +173,16 @@ export class LinksService {
         data: { isActive },
       });
     } catch (error) {
+      captureServiceError(error, {
+        service: 'links',
+        operation: 'updateIsActiveStatus',
+        userId,
+        context: {
+          linkId,
+          isActive,
+        },
+      });
+
       logServiceError('LinksService.updateIsActiveStatus', error);
       throw handlePrismaError(error, 'Failed to update link status');
     }
@@ -166,6 +212,15 @@ export class LinksService {
         where: { id: linkId },
       });
     } catch (error) {
+      captureServiceError(error, {
+        service: 'links',
+        operation: 'deleteLink',
+        userId,
+        context: {
+          linkId,
+        },
+      });
+
       logServiceError('LinksService.deleteLink', error);
       throw handlePrismaError(error, 'Failed to delete link');
     }
@@ -176,43 +231,58 @@ export class LinksService {
     linkId: string,
     newPosition: number,
   ): Promise<Links[]> {
-    await this.usersService.ensureUserExists(userId);
+    try {
+      await this.usersService.ensureUserExists(userId);
 
-    const links = await this.prisma.link.findMany({
-      where: {
+      const links = await this.prisma.link.findMany({
+        where: {
+          userId,
+        },
+        orderBy: {
+          position: 'asc',
+        },
+      });
+
+      const currentIndex = links.findIndex((link) => link.id === linkId);
+
+      if (currentIndex === -1) {
+        throw new NotFoundException('Link not found');
+      }
+
+      if (newPosition < 0 || newPosition >= links.length) {
+        throw new BadRequestException('Invalid position');
+      }
+
+      const [movedLink] = links.splice(currentIndex, 1);
+      links.splice(newPosition, 0, movedLink);
+
+      const updatedLinks = await this.prisma.$transaction(
+        links.map((link, index) =>
+          this.prisma.link.update({
+            where: {
+              id: link.id,
+            },
+            data: {
+              position: index,
+            },
+          }),
+        ),
+      );
+
+      return updatedLinks;
+    } catch (error) {
+      captureServiceError(error, {
+        service: 'links',
+        operation: 'updateLinkPosition',
         userId,
-      },
-      orderBy: {
-        position: 'asc',
-      },
-    });
+        context: {
+          linkId,
+          newPosition,
+        },
+      });
 
-    const currentIndex = links.findIndex((link) => link.id === linkId);
-
-    if (currentIndex === -1) {
-      throw new NotFoundException('Link not found');
+      logServiceError('LinksService.updateLinkPosition', error);
+      throw handlePrismaError(error, 'Failed to update link position');
     }
-
-    if (newPosition < 0 || newPosition >= links.length) {
-      throw new BadRequestException('Invalid position');
-    }
-
-    const [movedLink] = links.splice(currentIndex, 1);
-    links.splice(newPosition, 0, movedLink);
-
-    const updatedLinks = await this.prisma.$transaction(
-      links.map((link, index) =>
-        this.prisma.link.update({
-          where: {
-            id: link.id,
-          },
-          data: {
-            position: index,
-          },
-        }),
-      ),
-    );
-
-    return updatedLinks;
   }
 }
