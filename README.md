@@ -14,7 +14,7 @@ Urlbeo Backend is a scalable Node.js application designed to handle URL manageme
 
 - **Framework**: NestJS 11.0.1 (TypeScript backend framework for Node.js)
 - **Language**: TypeScript for type-safe development
-- **Database**: PostgreSQL with Prisma ORM for database access and migrations
+- **Database**: Neon PostgreSQL with Prisma ORM for database access and migrations
 - **Authentication**: Clerk for secure user authentication and session management
 - **Storage**: Cloudflare R2 for file storage and CDN integration
 - **Error Tracking**: Sentry for application error monitoring and reporting
