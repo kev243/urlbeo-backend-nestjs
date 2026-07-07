@@ -1,121 +1,222 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Urlbeo Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Production-ready REST API backend built with NestJS and TypeScript for URL management and user operations.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## About Urlbeo
 
-## Description
+Urlbeo is a minimalist link management application designed to consolidate all your important links into a single, shareable URL. Similar to Linktree, Urlbeo allows users to create a personalized landing page and share it across social media and other platforms. Users can add links, organize them by changing their position, and perform full link management. The backend provides the API infrastructure for user authentication, link management, and storage.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Overview
 
-## Project setup
+Urlbeo Backend is a scalable Node.js application designed to handle URL management, user authentication, and link operations. The project demonstrates best practices in backend development including structured logging, error tracking, health monitoring, and cloud deployment.
 
-```bash
-$ npm install
-```
+## Technology Stack
 
-## Compile and run the project
+- **Framework**: NestJS 11.0.1 (TypeScript backend framework for Node.js)
+- **Language**: TypeScript for type-safe development
+- **Database**: PostgreSQL with Prisma ORM for database access and migrations
+- **Authentication**: Clerk for secure user authentication and session management
+- **Storage**: Cloudflare R2 for file storage and CDN integration
+- **Error Tracking**: Sentry for application error monitoring and reporting
+- **Observability**: New Relic for performance monitoring, logs, and metrics in production
+- **Structured Logging**: Pino for JSON-formatted logging with request correlation
+- **Health Checks**: Terminus for liveness and readiness probes
+- **Metrics**: Prometheus for application metrics and monitoring
+- **Testing**: Jest with unit tests and end-to-end test coverage
+- **Deployment**: GitHub Actions CI/CD pipeline with Heroku cloud hosting
+- **Security**: Helmet for HTTP security headers, rate limiting with Throttler
 
-```bash
-# development
-$ npm run start
+## Quick Start
 
-# watch mode
-$ npm run start:dev
+### Prerequisites
 
-# production mode
-$ npm run start:prod
-```
+- Node.js 22 or higher
+- npm or yarn package manager
+- PostgreSQL database
 
-## Run tests
+### Installation
+
+Clone the repository and install dependencies:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
+The `postinstall` script automatically generates the Prisma client.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Development
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Run the application in development mode with hot reload:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+The API starts on `http://localhost:3000` with the base path `/api`.
 
-## Observability on Heroku
+### Production Build
 
-This project is prepared to run on Heroku with New Relic for logs, metrics, and dashboards.
+Build the application for production:
 
-Required Heroku config vars:
+```bash
+npm run build
+```
 
-- `DATABASE_URL`
-- `NODE_ENV=production`
-- `NEW_RELIC_LICENSE_KEY`
-- `NEW_RELIC_APP_NAME=urlbeo-backend`
-- `NEW_RELIC_LOG_LEVEL=info`
-- `SENTRY_DSN`
-- `SENTRY_ENVIRONMENT=production`
-- `SENTRY_RELEASE`
-- `SENTRY_SERVICE=urlbeo-backend`
-- `CORS_ORIGINS`
+Run the production build:
 
-Notes:
+```bash
+npm run start:prod
+```
 
-- `newrelic.js` is loaded first in `src/main.ts`, so the agent can instrument the app from startup.
-- `Procfile` uses `npm run start:prod`, which points to the compiled Nest entry point.
-- Logs remain available through Heroku, and New Relic receives the application telemetry and dashboards.
+## Testing
 
-## Resources
+Execute the test suite with coverage reporting:
 
-Check out a few resources that may come in handy when working with NestJS:
+```bash
+# Unit tests
+npm run test
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# End-to-end tests
+npm run test:e2e
 
-## Support
+# Test coverage report
+npm run test:cov
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## API Health Checks
 
-## Stay in touch
+The application provides three health check endpoints for monitoring:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- `GET /api/health/live` - Liveness probe, indicates if the application is running
+- `GET /api/health/ready` - Readiness probe, verifies database connectivity
+- `GET /api/health` - Alias for liveness check
+
+## Architecture
+
+### Modules
+
+- **Users Module** - User profile management and data access
+- **Links Module** - URL management, CRUD operations, and user link retrieval
+- **Prisma Module** - Database connection and ORM integration
+- **Authentication** - Clerk guard for request verification
+
+### Key Features
+
+- Service layer pattern for business logic separation
+- Data Transfer Objects (DTOs) for request/response validation
+- Error handling with Sentry integration for centralized error tracking
+- Structured logging with Pino for request/response tracking
+- Rate limiting to prevent abuse
+- CORS configuration for cross-origin requests
+- HTML content sanitization for user inputs
+
+## Observability and Monitoring
+
+### Error Tracking
+
+Application errors are captured with Sentry for centralized error monitoring. The `captureServiceError` helper function provides consistent error reporting with contextual information including service name, operation, and user identification.
+
+### Production Deployment
+
+The application is configured to deploy on Heroku with integrated observability via New Relic, providing:
+
+- Real-time application performance monitoring
+- Log aggregation and analysis
+- Custom metrics and dashboards
+- Distributed tracing for request flows
+- Alert capabilities for production incidents
+
+### Configuration
+
+For production deployment, configure the following environment variables on your hosting platform:
+
+```
+DATABASE_URL            # PostgreSQL connection string
+NODE_ENV               # Set to 'production'
+NEW_RELIC_LICENSE_KEY  # New Relic APM agent license
+NEW_RELIC_APP_NAME     # Application name in monitoring dashboard
+SENTRY_DSN             # Sentry error tracking DSN
+SENTRY_ENVIRONMENT     # Environment identifier (production, staging, etc)
+SENTRY_RELEASE         # Release version for error tracking
+CLERK_SECRET_KEY       # Clerk authentication secret
+CLOUDFLARE_ACCOUNT_ID  # Cloudflare account identifier
+CLOUDFLARE_ACCESS_KEY  # Cloudflare R2 access key ID
+CLOUDFLARE_SECRET_KEY  # Cloudflare R2 secret access key
+CLOUDFLARE_BUCKET      # Cloudflare R2 bucket name
+CORS_ORIGINS           # Allowed origin URLs for cross-origin requests
+```
+
+## CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+- Automated testing on pull requests
+- Automatic deployment to Heroku on merge to main branch
+- Prisma migrations handled during deployment
+- Build validation before deployment to production
+
+## Project Structure
+
+```
+src/
+  main.ts                    # Application entry point
+  app.controller.ts          # Main controller with health endpoints
+  app.service.ts             # Application service
+  app.module.ts              # Root module configuration
+
+  links/                     # URL management feature module
+    links.controller.ts      # HTTP endpoints for link operations
+    links.service.ts         # Business logic for link management
+    links.module.ts          # Links feature module
+
+  users/                     # User management feature module
+    users.controller.ts      # HTTP endpoints for user operations
+    users.service.ts         # Business logic for user data
+    users.module.ts          # Users feature module
+
+  prisma/                    # Database integration
+    prisma.service.ts        # Database connection management
+    prisma.module.ts         # Database module
+
+  guards/                    # Authentication guards
+    clerk-auth.guard.ts      # Clerk authentication verification
+
+  helpers/                   # Utility functions
+    sentry-service-error.ts  # Centralized error capture for Sentry
+    handle-prisma-error.ts   # Database error handling
+    log-service.ts           # Logging utilities
+
+  dto/                       # Data transfer object definitions
+  types/                     # TypeScript type definitions
+  pipes/                     # Custom NestJS pipes
+  decorators/                # Custom decorators
+
+prisma/
+  schema.prisma              # Database schema definition
+  migrations/                # Database migration history
+```
+
+## Development Workflow
+
+1. Create a feature branch from main
+2. Make changes and write tests
+3. Run `npm run build` to verify compilation
+4. Run `npm run test` to validate changes
+5. Commit changes with descriptive messages
+6. Push to GitHub and open a pull request
+7. GitHub Actions automatically runs tests
+8. After merge to main, GitHub Actions deploys to production
+
+## Contributing
+
+Code contributions should maintain:
+
+- TypeScript type safety across the codebase
+- Service layer abstraction for business logic
+- Error handling with Sentry integration
+- Test coverage for new features
+- Clear commit messages and PR descriptions
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This project is private and proprietary.
