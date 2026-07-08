@@ -14,6 +14,14 @@ describe('UsersService', () => {
   let clerkClientMock: any;
   let storageServiceMock: any;
 
+  beforeAll(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
   const sampleUser = {
     id: 'user-1',
     email: 'user@example.com',

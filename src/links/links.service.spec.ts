@@ -13,6 +13,14 @@ describe('LinksService', () => {
   let prismaMock: any;
   let usersServiceMock: any;
 
+  beforeAll(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterAll(() => {
+    jest.restoreAllMocks();
+  });
+
   const sampleLink = {
     id: 'link-1',
     userId: 'user-1',
