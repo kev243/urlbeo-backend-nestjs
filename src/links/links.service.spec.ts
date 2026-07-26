@@ -38,6 +38,7 @@ describe('LinksService', () => {
         findFirst: jest.fn(),
         findMany: jest.fn(),
         findUnique: jest.fn(),
+        updateMany: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
@@ -77,11 +78,11 @@ describe('LinksService', () => {
 
   describe('createLink', () => {
     it('creates a new link with next position', async () => {
-      prismaMock.link.findFirst.mockResolvedValue({
-        ...sampleLink,
-        position: 2,
-      });
-      prismaMock.link.create.mockResolvedValue({ ...sampleLink, position: 3 });
+      prismaMock.link.updateMany.mockResolvedValue({ count: 2 });
+      prismaMock.link.create.mockResolvedValue({ ...sampleLink, position: 0 });
+      prismaMock.$transaction.mockImplementation((callback: any) =>
+        callback(prismaMock),
+      );
 
       const result = await service.createLink('user-1', {
         title: 'New link',
@@ -89,9 +90,13 @@ describe('LinksService', () => {
       });
 
       expect(usersServiceMock.ensureUserExists).toHaveBeenCalledWith('user-1');
-      expect(prismaMock.link.findFirst).toHaveBeenCalledWith({
+      expect(prismaMock.link.updateMany).toHaveBeenCalledWith({
         where: { userId: 'user-1' },
-        orderBy: { position: 'desc' },
+        data: {
+          position: {
+            increment: 1,
+          },
+        },
       });
       expect(prismaMock.link.create).toHaveBeenCalledWith({
         data: {
@@ -99,10 +104,10 @@ describe('LinksService', () => {
           title: 'New link',
           url: 'https://example.com',
           isActive: true,
-          position: 3,
+          position: 0,
         },
       });
-      expect(result.position).toBe(3);
+      expect(result.position).toBe(0);
     });
 
     it('throws if userId is missing', async () => {
