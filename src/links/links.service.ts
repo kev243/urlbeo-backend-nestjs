@@ -23,29 +23,26 @@ export class LinksService {
   async createLink(userId: string, createLinkDto: LinkDto): Promise<Links> {
     try {
       await this.usersService.ensureUserExists(userId);
+      return this.prisma.$transaction(async (tx) => {
+        await tx.link.updateMany({
+          where: { userId },
+          data: {
+            position: {
+              increment: 1,
+            },
+          },
+        });
 
-      const lastLink = await this.prisma.link.findFirst({
-        where: {
-          userId,
-        },
-        orderBy: {
-          position: 'desc',
-        },
+        return tx.link.create({
+          data: {
+            userId,
+            title: createLinkDto.title,
+            url: createLinkDto.url,
+            isActive: true,
+            position: 0,
+          },
+        });
       });
-
-      const nextPosition = lastLink ? lastLink.position + 1 : 0;
-
-      const link = await this.prisma.link.create({
-        data: {
-          userId,
-          title: createLinkDto.title,
-          url: createLinkDto.url,
-          isActive: true,
-          position: nextPosition,
-        },
-      });
-
-      return link;
     } catch (error) {
       captureServiceError(error, {
         service: 'links',
