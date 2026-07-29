@@ -3,7 +3,11 @@ import {
   Injectable,
   PayloadTooLargeException,
 } from '@nestjs/common';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 
 const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -60,5 +64,20 @@ export class StorageService {
     );
 
     return `${process.env.CLOUDFLARE_PUBLIC_URL}/${key}`;
+  }
+
+  async deleteAvatar(avatarUrl: string) {
+    if (!avatarUrl) {
+      throw new BadRequestException('Avatar URL is required for deletion');
+    }
+
+    const key = avatarUrl.replace(`${process.env.CLOUDFLARE_PUBLIC_URL}/`, '');
+
+    await this.s3.send(
+      new DeleteObjectCommand({
+        Bucket: process.env.CLOUDFLARE_BUCKET_NAME!,
+        Key: key,
+      }),
+    );
   }
 }

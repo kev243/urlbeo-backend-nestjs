@@ -203,4 +203,70 @@ export class UsersService {
       throw handlePrismaError(error, 'Failed to update user avatar URL');
     }
   }
+
+  async deleteUser(userId: string): Promise<{ message: string }> {
+    try {
+      if (!userId) {
+        throw new BadRequestException('User ID is required');
+      }
+      const user = await this.prisma.$transaction(async (tx) => {
+        const existingUser = await tx.user.findUnique({
+          where: { id: userId },
+        });
+
+        if (!existingUser) {
+          throw new NotFoundException('User not found');
+        }
+
+        await tx.user.delete({
+          where: { id: userId },
+        });
+
+        return existingUser;
+      });
+
+      const cleanupErrors: Array<{
+        source: 'storage' | 'clerk';
+        error: unknown;
+      }> = [];
+
+      if (user.avatarUrl) {
+        try {
+          await this.storageService.deleteAvatar(user.avatarUrl);
+        } catch (error) {
+          cleanupErrors.push({ source: 'storage', error });
+        }
+      }
+
+      try {
+        await this.clerkClient.users.deleteUser(userId);
+      } catch (error) {
+        cleanupErrors.push({ source: 'clerk', error });
+      }
+
+      if (cleanupErrors.length > 0) {
+        captureServiceError(cleanupErrors[0].error, {
+          service: 'users',
+          operation: 'deleteUser.cleanup',
+          userId,
+          context: {
+            failedSources: cleanupErrors.map(({ source }) => source),
+          },
+        });
+
+        logServiceError('UsersService.deleteUser.cleanup', cleanupErrors);
+      }
+
+      return { message: 'User deleted successfully' };
+    } catch (error) {
+      captureServiceError(error, {
+        service: 'users',
+        operation: 'deleteUser',
+        userId,
+      });
+
+      logServiceError('UsersService.deleteUser', error);
+      throw handlePrismaError(error, 'Failed to delete user');
+    }
+  }
 }

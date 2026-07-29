@@ -54,6 +54,16 @@ npm run start:dev
 
 The API starts on `http://localhost:3000` with the base path `/api`.
 
+### API Documentation
+
+Swagger UI is available at:
+
+```text
+http://localhost:3000/api
+```
+
+Use this page to browse the available endpoints, schemas, and request/response examples.
+
 ### Production Build
 
 Build the application for production:

@@ -6,6 +6,7 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  Delete,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ClerkAuthGuard } from '../common/guards/clerk-auth.guard';
@@ -198,5 +199,29 @@ export class UsersController {
     @UploadedFile() avatar: Express.Multer.File,
   ) {
     return this.usersService.updateUserAvatarUrl(userId, avatar);
+  }
+
+  @Throttle({ default: { limit: 2, ttl: 60000 } })
+  @Delete('delete')
+  @ApiOperation({
+    summary: 'Delete user account',
+    description:
+      'Deletes the currently authenticated user account and associated data from the database.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User account successfully deleted',
+    schema: {
+      example: { message: 'User account deleted successfully' },
+    },
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Missing or invalid Clerk bearer token',
+  })
+  @ApiNotFoundResponse({
+    description: 'User not found in database',
+  })
+  async deleteUser(@CurrentUserId() userId: string) {
+    return this.usersService.deleteUser(userId);
   }
 }

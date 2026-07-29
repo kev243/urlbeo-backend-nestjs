@@ -39,6 +39,7 @@ describe('UsersService', () => {
       user: {
         upsert: jest.fn(),
         update: jest.fn(),
+        delete: jest.fn(),
         findUnique: jest.fn((args: any) => {
           if (args.where?.id) {
             return Promise.resolve(sampleUser);
@@ -46,16 +47,21 @@ describe('UsersService', () => {
           return Promise.resolve(null);
         }),
       },
+      $transaction: jest
+        .fn()
+        .mockImplementation((callback: any) => callback(prismaMock)),
     };
 
     clerkClientMock = {
       users: {
         getUser: jest.fn(),
+        deleteUser: jest.fn(),
       },
     };
 
     storageServiceMock = {
       uploadAvatar: jest.fn(),
+      deleteAvatar: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -285,6 +291,82 @@ describe('UsersService', () => {
         data: { avatarUrl: 'https://cdn.example.com/avatar.png' },
       });
       expect(result).toEqual({ url: 'https://cdn.example.com/avatar.png' });
+    });
+  });
+
+  describe('deleteUser', () => {
+    it('throws BadRequestException when userId is missing', async () => {
+      await expect(service.deleteUser('')).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('throws NotFoundException when user does not exist', async () => {
+      prismaMock.user.findUnique.mockResolvedValueOnce(null);
+
+      await expect(service.deleteUser('user-1')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+    });
+
+    it('deletes the user in a transaction and deletes the Clerk user', async () => {
+      prismaMock.user.delete.mockResolvedValue(sampleUser);
+
+      const result = await service.deleteUser('user-1');
+
+      expect(prismaMock.$transaction).toHaveBeenCalledWith(
+        expect.any(Function),
+      );
+      expect(prismaMock.user.findUnique).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+      });
+      expect(prismaMock.user.delete).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+      });
+      expect(clerkClientMock.users.deleteUser).toHaveBeenCalledWith('user-1');
+      expect(storageServiceMock.deleteAvatar).not.toHaveBeenCalled();
+      expect(result).toEqual({ message: 'User deleted successfully' });
+    });
+
+    it('deletes the avatar when the user has one', async () => {
+      prismaMock.user.findUnique.mockResolvedValueOnce({
+        ...sampleUser,
+        avatarUrl: 'https://cdn.example.com/avatar.png',
+      });
+      prismaMock.user.delete.mockResolvedValue(sampleUser);
+
+      await service.deleteUser('user-1');
+
+      expect(storageServiceMock.deleteAvatar).toHaveBeenCalledWith(
+        'https://cdn.example.com/avatar.png',
+      );
+    });
+
+    it('returns success when avatar cleanup fails after database deletion', async () => {
+      prismaMock.user.findUnique.mockResolvedValueOnce({
+        ...sampleUser,
+        avatarUrl: 'https://cdn.example.com/avatar.png',
+      });
+      prismaMock.user.delete.mockResolvedValue(sampleUser);
+      storageServiceMock.deleteAvatar.mockRejectedValue(
+        new Error('storage unavailable'),
+      );
+
+      await expect(service.deleteUser('user-1')).resolves.toEqual({
+        message: 'User deleted successfully',
+      });
+      expect(clerkClientMock.users.deleteUser).toHaveBeenCalledWith('user-1');
+    });
+
+    it('returns success when Clerk cleanup fails after database deletion', async () => {
+      prismaMock.user.delete.mockResolvedValue(sampleUser);
+      clerkClientMock.users.deleteUser.mockRejectedValue(
+        new Error('clerk unavailable'),
+      );
+
+      await expect(service.deleteUser('user-1')).resolves.toEqual({
+        message: 'User deleted successfully',
+      });
     });
   });
 });
