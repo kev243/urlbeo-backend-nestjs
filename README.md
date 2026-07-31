@@ -56,13 +56,13 @@ The API starts on `http://localhost:3000` with the base path `/api`.
 
 ### API Documentation
 
-Swagger UI is available at:
+Swagger UI is available in non-production environments at:
 
 ```text
 http://localhost:3000/api
 ```
 
-Use this page to browse the available endpoints, schemas, and request/response examples.
+Use this page to browse the available endpoints, schemas, and request/response examples. In production, Swagger UI is disabled to avoid exposing the API surface publicly.
 
 ### Production Build
 
@@ -154,6 +154,7 @@ CLOUDFLARE_ACCESS_KEY  # Cloudflare R2 access key ID
 CLOUDFLARE_SECRET_KEY  # Cloudflare R2 secret access key
 CLOUDFLARE_BUCKET      # Cloudflare R2 bucket name
 CORS_ORIGINS           # Allowed origin URLs for cross-origin requests
+METRICS_TOKEN          # Bearer token required to access /metrics in production
 ```
 
 ## CI/CD Pipeline

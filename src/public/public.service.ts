@@ -85,7 +85,7 @@ export class PublicService {
         },
       });
       logServiceError('PublicService.getUserByUsername', error);
-      throw handlePrismaError(error, 'Failed to get user by username');
+      handlePrismaError(error, 'Failed to get user by username');
     }
   }
 }

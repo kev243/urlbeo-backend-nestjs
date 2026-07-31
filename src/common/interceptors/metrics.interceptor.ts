@@ -8,6 +8,13 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Counter, Histogram } from 'prom-client';
+import { Request, Response } from 'express';
+
+type RequestWithRoute = Request & {
+  route?: {
+    path?: string;
+  };
+};
 
 @Injectable()
 export class MetricsInterceptor implements NestInterceptor {
@@ -18,20 +25,23 @@ export class MetricsInterceptor implements NestInterceptor {
     private readonly requestDuration: Histogram<string>,
   ) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const req = context.switchToHttp().getRequest();
-    const { method, route } = req;
-    const path = route?.path ?? req.path;
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const req = context.switchToHttp().getRequest<RequestWithRoute>();
+    const method = req.method;
+    const route = req.route as { path?: unknown } | undefined;
+    const routePath = route?.path;
+    const path = typeof routePath === 'string' ? routePath : req.path;
     const startTime = Date.now();
 
     return next.handle().pipe(
       tap(() => {
-        const res = context.switchToHttp().getResponse();
-        const status = res.statusCode;
+        const res = context.switchToHttp().getResponse<Response>();
+        const status = String(res.statusCode);
         const duration = (Date.now() - startTime) / 1000;
 
-        this.requestsCounter.inc({ method, path, status });
-        this.requestDuration.observe({ method, path, status }, duration);
+        const labels = { method, path, status };
+        this.requestsCounter.inc(labels);
+        this.requestDuration.observe(labels, duration);
       }),
     );
   }

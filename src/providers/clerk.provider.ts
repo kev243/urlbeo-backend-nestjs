@@ -1,11 +1,12 @@
 import { createClerkClient } from '@clerk/backend';
+import type { ClerkClient } from '@clerk/backend';
 import { ConfigService } from '@nestjs/config';
 
 export const ClerkClientProvider = {
   provide: 'ClerkClient',
-  useFactory: (configService: ConfigService) => {
-    const publishableKey = configService.get('CLERK_PUBLISHABLE_KEY');
-    const secretKey = configService.get('CLERK_SECRET_KEY');
+  useFactory: (configService: ConfigService): ClerkClient => {
+    const publishableKey = configService.get<string>('CLERK_PUBLISHABLE_KEY');
+    const secretKey = configService.get<string>('CLERK_SECRET_KEY');
 
     if (!publishableKey || !secretKey) {
       throw new Error(

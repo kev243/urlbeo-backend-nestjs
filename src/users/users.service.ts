@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import type { ClerkClient } from '@clerk/backend';
 import { PrismaService } from '../prisma/prisma.service';
 import { logServiceError } from '../helpers/log-service';
 import { handlePrismaError } from '../helpers/handle-prisma-error';
@@ -17,7 +18,7 @@ import { StorageService } from '../storage/storage.service';
 export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
-    @Inject('ClerkClient') private readonly clerkClient: any,
+    @Inject('ClerkClient') private readonly clerkClient: ClerkClient,
     private readonly storageService: StorageService,
   ) {}
 
@@ -36,7 +37,9 @@ export class UsersService {
 
   async syncAuthenticatedUser(userId: string): Promise<Users> {
     try {
-      await this.ensureUserExists(userId);
+      if (!userId) {
+        throw new BadRequestException('User ID is required');
+      }
 
       const clerkUser = await this.clerkClient.users.getUser(userId);
 
@@ -73,7 +76,7 @@ export class UsersService {
       });
 
       logServiceError('UsersService.syncAuthenticatedUser', error);
-      throw handlePrismaError(error, 'Failed to sync authenticated user');
+      handlePrismaError(error, 'Failed to sync authenticated user');
     }
   }
 
@@ -100,7 +103,7 @@ export class UsersService {
       });
 
       logServiceError('UsersService.getUserById', error);
-      throw handlePrismaError(error, 'Failed to get user by ID');
+      handlePrismaError(error, 'Failed to get user by ID');
     }
   }
 
@@ -129,7 +132,7 @@ export class UsersService {
       });
 
       logServiceError('UsersService.updateNameAndBio', error);
-      throw handlePrismaError(error, 'Failed to update user name and bio');
+      handlePrismaError(error, 'Failed to update user name and bio');
     }
   }
 
@@ -166,7 +169,7 @@ export class UsersService {
       });
 
       logServiceError('UsersService.updateUsername', error);
-      throw handlePrismaError(error, 'Failed to update user username');
+      handlePrismaError(error, 'Failed to update user username');
     }
   }
 
@@ -200,7 +203,7 @@ export class UsersService {
       });
 
       logServiceError('UsersService.updateUserAvatarUrl', error);
-      throw handlePrismaError(error, 'Failed to update user avatar URL');
+      handlePrismaError(error, 'Failed to update user avatar URL');
     }
   }
 
@@ -266,7 +269,7 @@ export class UsersService {
       });
 
       logServiceError('UsersService.deleteUser', error);
-      throw handlePrismaError(error, 'Failed to delete user');
+      handlePrismaError(error, 'Failed to delete user');
     }
   }
 }

@@ -8,7 +8,12 @@ export class SanitizeHtmlPipe implements PipeTransform {
   }
 
   private sanitizeDeep(value: unknown): unknown {
-    if (typeof value === 'string') return sanitizeHtml(value);
+    if (typeof value === 'string') {
+      return sanitizeHtml(value, {
+        allowedTags: [],
+        allowedAttributes: {},
+      });
+    }
     if (Array.isArray(value)) return value.map((v) => this.sanitizeDeep(v));
     if (value && typeof value === 'object') {
       return Object.fromEntries(

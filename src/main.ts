@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
+import { NextFunction, Request, Response } from 'express';
 import './instrument';
 
 const corsOrigins = process.env.CORS_ORIGINS?.split(',') ?? [];
@@ -19,6 +20,26 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.setGlobalPrefix('api');
   app.use(helmet());
+  app.use('/metrics', (req: Request, res: Response, next: NextFunction) => {
+    if (process.env.NODE_ENV !== 'production') {
+      next();
+      return;
+    }
+
+    const token = process.env.METRICS_TOKEN;
+    const authHeader = req.headers.authorization;
+    const bearerToken =
+      typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
+        ? authHeader.slice(7)
+        : undefined;
+
+    if (token && bearerToken === token) {
+      next();
+      return;
+    }
+
+    res.status(404).send();
+  });
 
   app.enableCors({
     origin: corsOrigins,
@@ -38,15 +59,18 @@ async function bootstrap() {
     prefix: 'v',
   });
 
-  const config = new DocumentBuilder()
-    .setTitle('Urlbeo API')
-    .setDescription('API for Urlbeo link management application')
-    .setVersion('1.0')
-    .addTag('urlbeo')
-    .build();
+  // Exposition de la documentation Swagger uniquement en environnement de développement
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Urlbeo API')
+      .setDescription('API for Urlbeo link management application')
+      .setVersion('1.0')
+      .addTag('urlbeo')
+      .build();
 
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+    const documentFactory = () => SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, documentFactory);
+  }
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();

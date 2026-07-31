@@ -20,6 +20,33 @@ const MIME_TYPE_TO_EXTENSION: Record<string, string> = {
   'image/webp': 'webp',
 };
 
+function isJpeg(buffer: Buffer) {
+  return (
+    buffer.length >= 3 &&
+    buffer[0] === 0xff &&
+    buffer[1] === 0xd8 &&
+    buffer[2] === 0xff
+  );
+}
+
+function isPng(buffer: Buffer) {
+  const signature = Buffer.from([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+  ]);
+  return (
+    buffer.length >= signature.length &&
+    buffer.subarray(0, signature.length).equals(signature)
+  );
+}
+
+function isWebp(buffer: Buffer) {
+  return (
+    buffer.length >= 12 &&
+    buffer.subarray(0, 4).toString('ascii') === 'RIFF' &&
+    buffer.subarray(8, 12).toString('ascii') === 'WEBP'
+  );
+}
+
 @Injectable()
 export class StorageService {
   private readonly s3 = new S3Client({
@@ -36,15 +63,31 @@ export class StorageService {
       throw new BadRequestException('Avatar file is required');
     }
 
+    if (!file.buffer || file.buffer.length === 0) {
+      throw new BadRequestException('Avatar file is empty');
+    }
+
     if (!ALLOWED_AVATAR_MIME_TYPES.includes(file.mimetype)) {
       throw new BadRequestException(
         'Invalid avatar format. Allowed formats: jpeg, png, webp',
       );
     }
 
-    if (file.size > MAX_AVATAR_SIZE) {
+    const fileSize = file.size || file.buffer.length;
+    if (fileSize > MAX_AVATAR_SIZE) {
       throw new PayloadTooLargeException(
         'Avatar file is too large. Maximum size is 5MB',
+      );
+    }
+
+    const hasValidSignature =
+      (file.mimetype === 'image/jpeg' && isJpeg(file.buffer)) ||
+      (file.mimetype === 'image/png' && isPng(file.buffer)) ||
+      (file.mimetype === 'image/webp' && isWebp(file.buffer));
+
+    if (!hasValidSignature) {
+      throw new BadRequestException(
+        'Avatar content does not match the declared file type',
       );
     }
   }

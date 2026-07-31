@@ -39,7 +39,7 @@ export class ClerkAuthGuard implements CanActivate {
       return true;
     }
 
-    const authHeader = req.headers.authorization as string | undefined;
+    const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith('Bearer ')
       ? authHeader.slice(7)
       : undefined;
@@ -59,7 +59,7 @@ export class ClerkAuthGuard implements CanActivate {
       };
 
       return true;
-    } catch (e) {
+    } catch {
       throw new UnauthorizedException('Invalid Clerk token');
     }
   }

@@ -59,7 +59,7 @@ export class LinksService {
       });
 
       logServiceError('LinksService.createLink', error);
-      throw handlePrismaError(error, 'Failed to create link');
+      handlePrismaError(error, 'Failed to create link');
     }
   }
 
@@ -111,7 +111,7 @@ export class LinksService {
       });
 
       logServiceError('LinksService.updateLink', error);
-      throw handlePrismaError(error, 'Failed to update link');
+      handlePrismaError(error, 'Failed to update link');
     }
   }
 
@@ -134,7 +134,7 @@ export class LinksService {
       });
 
       logServiceError('LinksService.getLinksByUserId', error);
-      throw handlePrismaError(error, 'Failed to retrieve links');
+      handlePrismaError(error, 'Failed to retrieve links');
     }
   }
   async updateIsActiveStatus(
@@ -181,7 +181,7 @@ export class LinksService {
       });
 
       logServiceError('LinksService.updateIsActiveStatus', error);
-      throw handlePrismaError(error, 'Failed to update link status');
+      handlePrismaError(error, 'Failed to update link status');
     }
   }
 
@@ -219,7 +219,7 @@ export class LinksService {
       });
 
       logServiceError('LinksService.deleteLink', error);
-      throw handlePrismaError(error, 'Failed to delete link');
+      handlePrismaError(error, 'Failed to delete link');
     }
   }
 
@@ -279,7 +279,7 @@ export class LinksService {
       });
 
       logServiceError('LinksService.updateLinkPosition', error);
-      throw handlePrismaError(error, 'Failed to update link position');
+      handlePrismaError(error, 'Failed to update link position');
     }
   }
 }

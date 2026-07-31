@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { TransformFnParams } from 'class-transformer/types/interfaces';
 import { IsString, Matches, MaxLength, MinLength } from 'class-validator';
+
+function normalizeUsername({ value }: TransformFnParams): unknown {
+  const input: unknown = value;
+  return typeof input === 'string' ? input.toLowerCase().trim() : input;
+}
 
 export class UpdateNameAndBioDto {
   @ApiProperty({
@@ -36,8 +42,6 @@ export class UpdateUsernameDto {
   @Matches(/^[a-zA-Z0-9-]+$/, {
     message: 'Username can only contain letters, numbers, and hyphens',
   })
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.toLowerCase().trim() : value,
-  )
+  @Transform(normalizeUsername)
   username!: string;
 }

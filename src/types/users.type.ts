@@ -1,5 +1,3 @@
-import { Links } from './links.type';
-
 export interface Users {
   id: string;
   email: string;

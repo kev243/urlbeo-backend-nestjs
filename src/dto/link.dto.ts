@@ -8,7 +8,13 @@ import {
 } from 'class-validator';
 
 import { Transform } from 'class-transformer';
+import { TransformFnParams } from 'class-transformer/types/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
+
+function trimString({ value }: TransformFnParams): unknown {
+  const input: unknown = value;
+  return typeof input === 'string' ? input.trim() : input;
+}
 
 export class LinkDto {
   @ApiProperty({
@@ -19,7 +25,7 @@ export class LinkDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(80)
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @Transform(trimString)
   title!: string;
 
   @ApiProperty({
@@ -34,7 +40,7 @@ export class LinkDto {
     protocols: ['http', 'https'],
   })
   @MaxLength(2048)
-  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @Transform(trimString)
   url!: string;
 }
 

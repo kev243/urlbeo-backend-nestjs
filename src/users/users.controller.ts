@@ -158,7 +158,14 @@ export class UsersController {
 
   @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Patch('avatar')
-  @UseInterceptors(FileInterceptor('avatar'))
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      limits: {
+        fileSize: 5 * 1024 * 1024,
+        files: 1,
+      },
+    }),
+  )
   @ApiOperation({
     summary: 'Update user avatar',
     description:
