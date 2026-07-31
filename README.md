@@ -2,6 +2,8 @@
 
 Production-ready REST API backend built with NestJS and TypeScript for URL management and user operations.
 
+**Landing Page**: [urlbeo.com](https://urlbeo.com)
+
 ## About Urlbeo
 
 Urlbeo is a minimalist link management application designed to consolidate all your important links into a single, shareable URL. Similar to Linktree, Urlbeo allows users to create a personalized landing page and share it across social media and other platforms. Users can add links, organize them by changing their position, and perform full link management. The backend provides the API infrastructure for user authentication, link management, and storage.
@@ -23,36 +25,16 @@ Urlbeo Backend is a scalable Node.js application designed to handle URL manageme
 - **Health Checks**: Terminus for liveness and readiness probes
 - **Metrics**: Prometheus for application metrics and monitoring
 - **Testing**: Jest with unit tests and end-to-end test coverage
-- **Deployment**: GitHub Actions CI/CD pipeline with Heroku cloud hosting
+- **Deployment**: GitHub Actions CI/CD pipeline with Railway cloud hosting
 - **Security**: Helmet for HTTP security headers, rate limiting with Throttler
 
-## Quick Start
+## Runtime Overview
 
-### Prerequisites
-
-- Node.js 22 or higher
-- npm or yarn package manager
-- PostgreSQL database
-
-### Installation
-
-Clone the repository and install dependencies:
-
-```bash
-npm install
-```
-
-The `postinstall` script automatically generates the Prisma client.
-
-### Development
-
-Run the application in development mode with hot reload:
-
-```bash
-npm run start:dev
-```
-
-The API starts on `http://localhost:3000` with the base path `/api`.
+- **Node.js version**: 22
+- **API base path**: `/api`
+- **Production start command**: `npm run start:prod`
+- **Prisma client generation**: handled automatically by the `postinstall` script
+- **Database migrations**: handled by GitHub Actions with `npm run prisma:migrate`
 
 ### API Documentation
 
@@ -64,34 +46,15 @@ http://localhost:3000/api
 
 Use this page to browse the available endpoints, schemas, and request/response examples. In production, Swagger UI is disabled to avoid exposing the API surface publicly.
 
-### Production Build
+## Quality Gates
 
-Build the application for production:
+The project uses automated quality checks in CI before deployment:
 
-```bash
-npm run build
-```
-
-Run the production build:
-
-```bash
-npm run start:prod
-```
-
-## Testing
-
-Execute the test suite with coverage reporting:
-
-```bash
-# Unit tests
-npm run test
-
-# End-to-end tests
-npm run test:e2e
-
-# Test coverage report
-npm run test:cov
-```
+- TypeScript compilation with the NestJS build pipeline
+- ESLint for code quality and type-safety rules
+- Jest unit tests
+- End-to-end tests
+- Production dependency audit with `npm audit --omit=dev`
 
 ## API Health Checks
 
@@ -128,7 +91,7 @@ Application errors are captured with Sentry for centralized error monitoring. Th
 
 ### Production Deployment
 
-The application is configured to deploy on Heroku with integrated observability via New Relic, providing:
+The application is configured to deploy on Railway with integrated observability via New Relic, providing:
 
 - Real-time application performance monitoring
 - Log aggregation and analysis
@@ -157,12 +120,20 @@ CORS_ORIGINS           # Allowed origin URLs for cross-origin requests
 METRICS_TOKEN          # Bearer token required to access /metrics in production
 ```
 
+For GitHub Actions deployment to Railway, configure these repository secrets:
+
+```
+DATABASE_URL           # Production PostgreSQL connection string used by Prisma migrations
+RAILWAY_TOKEN          # Railway project token used by the deployment workflow
+RAILWAY_SERVICE_ID     # Optional Railway service identifier when the project has multiple services
+```
+
 ## CI/CD Pipeline
 
 The project uses GitHub Actions for continuous integration and deployment:
 
 - Automated testing on pull requests
-- Automatic deployment to Heroku on merge to main branch
+- Automatic deployment to Railway on merge to main branch
 - Prisma migrations handled during deployment
 - Build validation before deployment to production
 
@@ -206,27 +177,6 @@ prisma/
   schema.prisma              # Database schema definition
   migrations/                # Database migration history
 ```
-
-## Development Workflow
-
-1. Create a feature branch from main
-2. Make changes and write tests
-3. Run `npm run build` to verify compilation
-4. Run `npm run test` to validate changes
-5. Commit changes with descriptive messages
-6. Push to GitHub and open a pull request
-7. GitHub Actions automatically runs tests
-8. After merge to main, GitHub Actions deploys to production
-
-## Contributing
-
-Code contributions should maintain:
-
-- TypeScript type safety across the codebase
-- Service layer abstraction for business logic
-- Error handling with Sentry integration
-- Test coverage for new features
-- Clear commit messages and PR descriptions
 
 ## License
 

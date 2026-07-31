@@ -1,4 +1,4 @@
-name: Test & Deploy to Heroku
+name: Test & Deploy to Railway
 
 on:
   push:
@@ -48,6 +48,9 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/urlbeo_test
         run: npx prisma migrate deploy
 
+      - name: Run lint
+        run: npx eslint "{src,apps,libs,test}/**/*.ts"
+
       - name: Run unit tests
         run: npm run test
 
@@ -58,6 +61,9 @@ jobs:
 
       - name: Build application
         run: npm run build
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev
 
   deploy:
     needs: test
@@ -85,23 +91,32 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to Heroku
+      - name: Run production database migrations
         env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          if [ -z "$HEROKU_API_KEY" ] || [ -z "$HEROKU_APP_NAME" ]; then
-            echo "Missing Heroku secrets. Please set HEROKU_API_KEY and HEROKU_APP_NAME in GitHub Secrets."
+          if [ -z "$DATABASE_URL" ]; then
+            echo "Missing DATABASE_URL secret. Please set the production database connection string in GitHub Secrets."
             exit 1
           fi
 
-          curl https://cli-assets.heroku.com/install.sh | sh
-          heroku --version
+          npm run prisma:migrate
 
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
 
-          git remote remove heroku 2>/dev/null || true
-          git remote add heroku https://heroku:${HEROKU_API_KEY}@git.heroku.com/${HEROKU_APP_NAME}.git
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "Missing Railway secret. Please set RAILWAY_TOKEN in GitHub Secrets."
+            exit 1
+          fi
 
-          git push heroku main
+          if [ -n "$RAILWAY_SERVICE_ID" ]; then
+            railway up --ci --service "$RAILWAY_SERVICE_ID"
+          else
+            railway up --ci
+          fi
