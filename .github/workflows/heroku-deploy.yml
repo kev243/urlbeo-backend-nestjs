@@ -1,4 +1,4 @@
-name: Test & Deploy to Railway
+name: Test & Deploy to Heroku
 
 on:
   push:
@@ -102,21 +102,23 @@ jobs:
 
           npm run prisma:migrate
 
-      - name: Install Railway CLI
-        run: npm i -g @railway/cli
-
-      - name: Deploy to Railway
+      - name: Deploy to Heroku
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
         run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "Missing Railway secret. Please set RAILWAY_TOKEN in GitHub Secrets."
+          if [ -z "$HEROKU_API_KEY" ] || [ -z "$HEROKU_APP_NAME" ]; then
+            echo "Missing Heroku secrets. Please set HEROKU_API_KEY and HEROKU_APP_NAME in GitHub Secrets."
             exit 1
           fi
 
-          if [ -n "$RAILWAY_SERVICE_ID" ]; then
-            railway up --ci --service "$RAILWAY_SERVICE_ID"
-          else
-            railway up --ci
-          fi
+          curl https://cli-assets.heroku.com/install.sh | sh
+          heroku --version
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git remote remove heroku 2>/dev/null || true
+          git remote add heroku https://heroku:${HEROKU_API_KEY}@git.heroku.com/${HEROKU_APP_NAME}.git
+
+          git push heroku main

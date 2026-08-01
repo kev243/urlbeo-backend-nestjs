@@ -25,7 +25,7 @@ Urlbeo Backend is a scalable Node.js application designed to handle URL manageme
 - **Health Checks**: Terminus for liveness and readiness probes
 - **Metrics**: Prometheus for application metrics and monitoring
 - **Testing**: Jest with unit tests and end-to-end test coverage
-- **Deployment**: GitHub Actions CI/CD pipeline with Railway cloud hosting
+- **Deployment**: GitHub Actions CI/CD pipeline with Heroku cloud hosting
 - **Security**: Helmet for HTTP security headers, rate limiting with Throttler
 
 ## Runtime Overview
@@ -91,7 +91,7 @@ Application errors are captured with Sentry for centralized error monitoring. Th
 
 ### Production Deployment
 
-The application is configured to deploy on Railway with integrated observability via New Relic, providing:
+The application is configured to deploy on Heroku with integrated observability via New Relic, providing:
 
 - Real-time application performance monitoring
 - Log aggregation and analysis
@@ -120,12 +120,12 @@ CORS_ORIGINS           # Allowed origin URLs for cross-origin requests
 METRICS_TOKEN          # Bearer token required to access /metrics in production
 ```
 
-For GitHub Actions deployment to Railway, configure these repository secrets:
+For GitHub Actions deployment to Heroku, configure these repository secrets:
 
 ```
 DATABASE_URL           # Production PostgreSQL connection string used by Prisma migrations
-RAILWAY_TOKEN          # Railway project token used by the deployment workflow
-RAILWAY_SERVICE_ID     # Optional Railway service identifier when the project has multiple services
+HEROKU_API_KEY         # Heroku API key used by the deployment workflow
+HEROKU_APP_NAME        # Heroku application name
 ```
 
 ## CI/CD Pipeline
@@ -133,7 +133,7 @@ RAILWAY_SERVICE_ID     # Optional Railway service identifier when the project ha
 The project uses GitHub Actions for continuous integration and deployment:
 
 - Automated testing on pull requests
-- Automatic deployment to Railway on merge to main branch
+- Automatic deployment to Heroku on merge to main branch
 - Prisma migrations handled during deployment
 - Build validation before deployment to production
 
