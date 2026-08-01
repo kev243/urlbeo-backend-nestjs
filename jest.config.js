@@ -6,6 +6,7 @@ module.exports = {
     '^.+\\.(t|j)s$': 'ts-jest',
   },
   moduleNameMapper: {
+    '^sanitize-html$': '<rootDir>/common/testing/sanitize-html.mock.ts',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   collectCoverageFrom: ['**/*.(t|j)s'],

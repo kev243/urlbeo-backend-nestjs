@@ -1,15 +1,14 @@
 name: Test & Deploy to Heroku
 
 on:
-  push:
-    branches: ['main']
   pull_request:
     branches: ['main']
-  workflow_dispatch:
+    types: [opened, synchronize, reopened, closed]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: github.event.action != 'closed' || github.event.pull_request.merged == true
 
     services:
       postgres:
@@ -68,7 +67,7 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.event.action == 'closed' && github.event.pull_request.merged == true
 
     steps:
       - name: Checkout
