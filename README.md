@@ -4,6 +4,10 @@ Production-ready REST API backend built with NestJS and TypeScript for URL manag
 
 **Landing Page**: [urlbeo.com](https://urlbeo.com)
 
+## API Preview
+
+![Urlbeo Postman API Preview](docs/images/preview.png)
+
 ## About Urlbeo
 
 Urlbeo is a minimalist link management application designed to consolidate all your important links into a single, shareable URL. Similar to Linktree, Urlbeo allows users to create a personalized landing page and share it across social media and other platforms. Users can add links, organize them by changing their position, and perform full link management. The backend provides the API infrastructure for user authentication, link management, and storage.
@@ -133,9 +137,11 @@ HEROKU_APP_NAME        # Heroku application name
 The project uses GitHub Actions for continuous integration and deployment:
 
 - Automated testing on pull requests
-- Automatic deployment to Heroku on merge to main branch
+- Automatic deployment to Heroku only after a pull request into `main` is merged
+- Deployment runs only after the CI quality checks pass
 - Prisma migrations handled during deployment
 - Build validation before deployment to production
+- Heroku dashboard automatic deploys should remain disabled so GitHub Actions stays the single deployment path
 
 ## Project Structure
 
