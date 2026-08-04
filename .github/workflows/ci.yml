@@ -1,12 +1,12 @@
-name: Deploy to Heroku
+name: CI
 
 on:
-  push:
+  pull_request:
     branches: ['main']
-  workflow_dispatch:
+    types: [opened, synchronize, reopened]
 
 jobs:
-  test-and-deploy:
+  test:
     runs-on: ubuntu-latest
 
     services:
@@ -62,25 +62,3 @@ jobs:
 
       - name: Audit production dependencies
         run: npm audit --omit=dev
-
-      - name: Deploy to Heroku
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
-        run: |
-          if [ -z "$HEROKU_API_KEY" ] || [ -z "$HEROKU_APP_NAME" ]; then
-            echo "Missing Heroku secrets. Please set HEROKU_API_KEY and HEROKU_APP_NAME in GitHub Secrets."
-            exit 1
-          fi
-
-          echo "::add-mask::$HEROKU_API_KEY"
-          curl https://cli-assets.heroku.com/install.sh | sh
-          heroku --version
-
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git remote remove heroku 2>/dev/null || true
-          git remote add heroku https://heroku:${HEROKU_API_KEY}@git.heroku.com/${HEROKU_APP_NAME}.git
-
-          git push heroku main

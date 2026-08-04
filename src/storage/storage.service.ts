@@ -114,7 +114,36 @@ export class StorageService {
       throw new BadRequestException('Avatar URL is required for deletion');
     }
 
-    const key = avatarUrl.replace(`${process.env.CLOUDFLARE_PUBLIC_URL}/`, '');
+    const publicUrl = process.env.CLOUDFLARE_PUBLIC_URL;
+    if (!publicUrl) {
+      throw new Error('CLOUDFLARE_PUBLIC_URL is not set');
+    }
+
+    let avatarUrlObject: URL;
+    let publicUrlObject: URL;
+
+    try {
+      avatarUrlObject = new URL(avatarUrl);
+      publicUrlObject = new URL(publicUrl);
+    } catch {
+      throw new BadRequestException('Invalid avatar URL');
+    }
+
+    if (avatarUrlObject.origin !== publicUrlObject.origin) {
+      throw new BadRequestException('Avatar URL does not match storage origin');
+    }
+
+    const basePath = publicUrlObject.pathname.replace(/\/$/, '');
+    if (basePath && !avatarUrlObject.pathname.startsWith(`${basePath}/`)) {
+      throw new BadRequestException('Avatar URL does not match storage path');
+    }
+
+    const key = decodeURIComponent(
+      avatarUrlObject.pathname.slice(basePath.length).replace(/^\//, ''),
+    );
+    if (!key.startsWith('avatars/')) {
+      throw new BadRequestException('Avatar key is outside the avatars folder');
+    }
 
     await this.s3.send(
       new DeleteObjectCommand({
