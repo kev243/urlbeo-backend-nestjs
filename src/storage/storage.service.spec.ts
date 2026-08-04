@@ -5,6 +5,10 @@ import { StorageService } from './storage.service';
 describe('StorageService', () => {
   let service: StorageService;
 
+  beforeAll(() => {
+    process.env.CLOUDFLARE_PUBLIC_URL = 'https://cdn.urlbeo.com';
+  });
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [StorageService],
@@ -45,5 +49,17 @@ describe('StorageService', () => {
         size: 5 * 1024 * 1024 + 1,
       } as Express.Multer.File),
     ).rejects.toBeInstanceOf(PayloadTooLargeException);
+  });
+
+  it('rejects avatar deletion when the URL origin does not match storage', async () => {
+    await expect(
+      service.deleteAvatar('https://evil.example.com/avatars/user-1/a.png'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('rejects avatar deletion outside the avatars folder', async () => {
+    await expect(
+      service.deleteAvatar('https://cdn.urlbeo.com/private/user-1/a.png'),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

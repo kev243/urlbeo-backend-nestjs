@@ -15,7 +15,29 @@ if (corsOrigins.length === 0) {
   );
 }
 
+function assertProductionConfig() {
+  if (process.env.NODE_ENV !== 'production') {
+    return;
+  }
+
+  if (process.env.ALLOW_DEV_AUTH_BYPASS === 'true') {
+    throw new Error(
+      'ALLOW_DEV_AUTH_BYPASS must never be enabled in production',
+    );
+  }
+
+  if (!process.env.METRICS_TOKEN) {
+    throw new Error('METRICS_TOKEN must be set in production');
+  }
+
+  if (corsOrigins.length === 0) {
+    throw new Error('CORS_ORIGINS must be set in production');
+  }
+}
+
 async function bootstrap() {
+  assertProductionConfig();
+
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
   app.setGlobalPrefix('api');

@@ -38,7 +38,7 @@ Urlbeo Backend is a scalable Node.js application designed to handle URL manageme
 - **API base path**: `/api`
 - **Production start command**: `npm run start:prod`
 - **Prisma client generation**: handled automatically by the `postinstall` script
-- **Database migrations**: handled by GitHub Actions with `npm run prisma:migrate`
+- **Database migrations**: handled by the Heroku release phase with `npm run prisma:migrate`
 
 ### API Documentation
 
@@ -127,7 +127,6 @@ METRICS_TOKEN          # Bearer token required to access /metrics in production
 For GitHub Actions deployment to Heroku, configure these repository secrets:
 
 ```
-DATABASE_URL           # Production PostgreSQL connection string used by Prisma migrations
 HEROKU_API_KEY         # Heroku API key used by the deployment workflow
 HEROKU_APP_NAME        # Heroku application name
 ```
@@ -137,9 +136,10 @@ HEROKU_APP_NAME        # Heroku application name
 The project uses GitHub Actions for continuous integration and deployment:
 
 - Automated testing on pull requests
-- Automatic deployment to Heroku only after a pull request into `main` is merged
-- Deployment runs only after the CI quality checks pass
-- Prisma migrations handled during deployment
+- Automatic deployment to Heroku on updates to `main`
+- The `main` branch must be protected so updates happen only through merged pull requests with passing CI
+- The deployment workflow reruns lint, tests, build, and production dependency audit before publishing
+- Prisma migrations handled by the Heroku release phase during deployment
 - Build validation before deployment to production
 - Heroku dashboard automatic deploys should remain disabled so GitHub Actions stays the single deployment path
 
