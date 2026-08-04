@@ -6,10 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { PublicParamUsernameDto } from '../dto/public.dto';
 import { ResponsePublicUserByUsername } from '../types/public';
-import { logServiceError } from '../helpers/log-service';
-
-import { handlePrismaError } from '../helpers/handle-prisma-error';
-import { captureServiceError } from '../helpers/sentry-service-error';
+import { handleServiceError } from '../helpers/handle-service-error';
 
 @Injectable()
 export class PublicService {
@@ -77,15 +74,18 @@ export class PublicService {
         links: user.links,
       };
     } catch (error) {
-      captureServiceError(error, {
-        service: 'PublicService.getUserByUsername',
-        operation: 'getUserByUsername',
-        context: {
-          username: dto.username,
+      handleServiceError(
+        error,
+        'PublicService.getUserByUsername',
+        'Failed to get user by username',
+        {
+          service: 'public',
+          operation: 'getUserByUsername',
+          context: {
+            username: dto.username,
+          },
         },
-      });
-      logServiceError('PublicService.getUserByUsername', error);
-      handlePrismaError(error, 'Failed to get user by username');
+      );
     }
   }
 }
