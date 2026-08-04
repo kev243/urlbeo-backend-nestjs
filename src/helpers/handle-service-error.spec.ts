@@ -1,22 +1,19 @@
 import { BadRequestException } from '@nestjs/common';
 import { handleServiceError } from './handle-service-error';
+import { logServiceError } from './log-service';
 import { captureServiceError } from './sentry-service-error';
+
+jest.mock('./log-service', () => ({
+  logServiceError: jest.fn(),
+}));
 
 jest.mock('./sentry-service-error', () => ({
   captureServiceError: jest.fn(),
 }));
 
 describe('handleServiceError', () => {
-  beforeAll(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-  });
-
   afterEach(() => {
     jest.clearAllMocks();
-  });
-
-  afterAll(() => {
-    jest.restoreAllMocks();
   });
 
   it('does not send expected HTTP exceptions to Sentry', () => {
@@ -30,6 +27,10 @@ describe('handleServiceError', () => {
       }),
     ).toThrow(BadRequestException);
 
+    expect(logServiceError).toHaveBeenCalledWith(
+      'TestService.operation',
+      error,
+    );
     expect(captureServiceError).not.toHaveBeenCalled();
   });
 
@@ -51,5 +52,9 @@ describe('handleServiceError', () => {
     ).toThrow('Fallback message');
 
     expect(captureServiceError).toHaveBeenCalledWith(error, sentryOptions);
+    expect(logServiceError).toHaveBeenCalledWith(
+      'TestService.operation',
+      error,
+    );
   });
 });
