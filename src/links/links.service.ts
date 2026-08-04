@@ -6,9 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
-import { logServiceError } from '../helpers/log-service';
-import { handlePrismaError } from '../helpers/handle-prisma-error';
-import { captureServiceError } from '../helpers/sentry-service-error';
+import { handleServiceError } from '../helpers/handle-service-error';
 import { Links } from '../types/links.type';
 import { UsersService } from '../users/users.service';
 import { LinkDto } from '../dto/link.dto';
@@ -44,22 +42,24 @@ export class LinksService {
         });
       });
     } catch (error) {
-      captureServiceError(error, {
-        service: 'links',
-        operation: 'createLink',
-        userId,
-        context: {
-          hasTitle:
-            typeof createLinkDto?.title === 'string' &&
-            createLinkDto.title.length > 0,
-          hasUrl:
-            typeof createLinkDto?.url === 'string' &&
-            createLinkDto.url.length > 0,
+      handleServiceError(
+        error,
+        'LinksService.createLink',
+        'Failed to create link',
+        {
+          service: 'links',
+          operation: 'createLink',
+          userId,
+          context: {
+            hasTitle:
+              typeof createLinkDto?.title === 'string' &&
+              createLinkDto.title.length > 0,
+            hasUrl:
+              typeof createLinkDto?.url === 'string' &&
+              createLinkDto.url.length > 0,
+          },
         },
-      });
-
-      logServiceError('LinksService.createLink', error);
-      handlePrismaError(error, 'Failed to create link');
+      );
     }
   }
 
@@ -95,23 +95,25 @@ export class LinksService {
         },
       });
     } catch (error) {
-      captureServiceError(error, {
-        service: 'links',
-        operation: 'updateLink',
-        userId,
-        context: {
-          linkId,
-          hasTitle:
-            typeof updateLinkDto?.title === 'string' &&
-            updateLinkDto.title.length > 0,
-          hasUrl:
-            typeof updateLinkDto?.url === 'string' &&
-            updateLinkDto.url.length > 0,
+      handleServiceError(
+        error,
+        'LinksService.updateLink',
+        'Failed to update link',
+        {
+          service: 'links',
+          operation: 'updateLink',
+          userId,
+          context: {
+            linkId,
+            hasTitle:
+              typeof updateLinkDto?.title === 'string' &&
+              updateLinkDto.title.length > 0,
+            hasUrl:
+              typeof updateLinkDto?.url === 'string' &&
+              updateLinkDto.url.length > 0,
+          },
         },
-      });
-
-      logServiceError('LinksService.updateLink', error);
-      handlePrismaError(error, 'Failed to update link');
+      );
     }
   }
 
@@ -127,14 +129,16 @@ export class LinksService {
         },
       });
     } catch (error) {
-      captureServiceError(error, {
-        service: 'links',
-        operation: 'getLinksByUserId',
-        userId,
-      });
-
-      logServiceError('LinksService.getLinksByUserId', error);
-      handlePrismaError(error, 'Failed to retrieve links');
+      handleServiceError(
+        error,
+        'LinksService.getLinksByUserId',
+        'Failed to retrieve links',
+        {
+          service: 'links',
+          operation: 'getLinksByUserId',
+          userId,
+        },
+      );
     }
   }
   async updateIsActiveStatus(
@@ -170,18 +174,20 @@ export class LinksService {
         data: { isActive },
       });
     } catch (error) {
-      captureServiceError(error, {
-        service: 'links',
-        operation: 'updateIsActiveStatus',
-        userId,
-        context: {
-          linkId,
-          isActive,
+      handleServiceError(
+        error,
+        'LinksService.updateIsActiveStatus',
+        'Failed to update link status',
+        {
+          service: 'links',
+          operation: 'updateIsActiveStatus',
+          userId,
+          context: {
+            linkId,
+            isActive,
+          },
         },
-      });
-
-      logServiceError('LinksService.updateIsActiveStatus', error);
-      handlePrismaError(error, 'Failed to update link status');
+      );
     }
   }
 
@@ -209,17 +215,19 @@ export class LinksService {
         where: { id: linkId },
       });
     } catch (error) {
-      captureServiceError(error, {
-        service: 'links',
-        operation: 'deleteLink',
-        userId,
-        context: {
-          linkId,
+      handleServiceError(
+        error,
+        'LinksService.deleteLink',
+        'Failed to delete link',
+        {
+          service: 'links',
+          operation: 'deleteLink',
+          userId,
+          context: {
+            linkId,
+          },
         },
-      });
-
-      logServiceError('LinksService.deleteLink', error);
-      handlePrismaError(error, 'Failed to delete link');
+      );
     }
   }
 
@@ -268,18 +276,20 @@ export class LinksService {
 
       return updatedLinks;
     } catch (error) {
-      captureServiceError(error, {
-        service: 'links',
-        operation: 'updateLinkPosition',
-        userId,
-        context: {
-          linkId,
-          newPosition,
+      handleServiceError(
+        error,
+        'LinksService.updateLinkPosition',
+        'Failed to update link position',
+        {
+          service: 'links',
+          operation: 'updateLinkPosition',
+          userId,
+          context: {
+            linkId,
+            newPosition,
+          },
         },
-      });
-
-      logServiceError('LinksService.updateLinkPosition', error);
-      handlePrismaError(error, 'Failed to update link position');
+      );
     }
   }
 }

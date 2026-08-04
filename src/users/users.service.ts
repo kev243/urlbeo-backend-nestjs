@@ -8,11 +8,11 @@ import {
 import type { ClerkClient } from '@clerk/backend';
 import { PrismaService } from '../prisma/prisma.service';
 import { logServiceError } from '../helpers/log-service';
-import { handlePrismaError } from '../helpers/handle-prisma-error';
 import { captureServiceError } from '../helpers/sentry-service-error';
 import { Users } from '../types/users.type';
 import { UpdateNameAndBioDto, UpdateUsernameDto } from '../dto/user.dto';
 import { StorageService } from '../storage/storage.service';
+import { handleServiceError } from '../helpers/handle-service-error';
 
 @Injectable()
 export class UsersService {
@@ -69,14 +69,16 @@ export class UsersService {
 
       return user;
     } catch (error) {
-      captureServiceError(error, {
-        service: 'users',
-        operation: 'syncAuthenticatedUser',
-        userId,
-      });
-
-      logServiceError('UsersService.syncAuthenticatedUser', error);
-      handlePrismaError(error, 'Failed to sync authenticated user');
+      handleServiceError(
+        error,
+        'UsersService.syncAuthenticatedUser',
+        'Failed to sync authenticated user',
+        {
+          service: 'users',
+          operation: 'syncAuthenticatedUser',
+          userId,
+        },
+      );
     }
   }
 
@@ -96,14 +98,16 @@ export class UsersService {
 
       return user;
     } catch (error) {
-      captureServiceError(error, {
-        service: 'users',
-        operation: 'getUserById',
-        userId,
-      });
-
-      logServiceError('UsersService.getUserById', error);
-      handlePrismaError(error, 'Failed to get user by ID');
+      handleServiceError(
+        error,
+        'UsersService.getUserById',
+        'Failed to get user by ID',
+        {
+          service: 'users',
+          operation: 'getUserById',
+          userId,
+        },
+      );
     }
   }
 
@@ -121,18 +125,20 @@ export class UsersService {
 
       return updatedUser;
     } catch (error) {
-      captureServiceError(error, {
-        service: 'users',
-        operation: 'updateNameAndBio',
-        userId,
-        context: {
-          hasName: typeof dto?.name === 'string' && dto.name.length > 0,
-          hasBio: typeof dto?.bio === 'string' && dto.bio.length > 0,
+      handleServiceError(
+        error,
+        'UsersService.updateNameAndBio',
+        'Failed to update user name and bio',
+        {
+          service: 'users',
+          operation: 'updateNameAndBio',
+          userId,
+          context: {
+            hasName: typeof dto?.name === 'string' && dto.name.length > 0,
+            hasBio: typeof dto?.bio === 'string' && dto.bio.length > 0,
+          },
         },
-      });
-
-      logServiceError('UsersService.updateNameAndBio', error);
-      handlePrismaError(error, 'Failed to update user name and bio');
+      );
     }
   }
 
@@ -158,18 +164,20 @@ export class UsersService {
 
       return updatedUser;
     } catch (error) {
-      captureServiceError(error, {
-        service: 'users',
-        operation: 'updateUsername',
-        userId,
-        context: {
-          hasUsername:
-            typeof dto?.username === 'string' && dto.username.length > 0,
+      handleServiceError(
+        error,
+        'UsersService.updateUsername',
+        'Failed to update user username',
+        {
+          service: 'users',
+          operation: 'updateUsername',
+          userId,
+          context: {
+            hasUsername:
+              typeof dto?.username === 'string' && dto.username.length > 0,
+          },
         },
-      });
-
-      logServiceError('UsersService.updateUsername', error);
-      handlePrismaError(error, 'Failed to update user username');
+      );
     }
   }
 
@@ -192,18 +200,20 @@ export class UsersService {
       });
       return { url: avatarUrl };
     } catch (error) {
-      captureServiceError(error, {
-        service: 'users',
-        operation: 'updateUserAvatarUrl',
-        userId,
-        context: {
-          hasAvatar: !!avatar,
-          avatarMimeType: avatar?.mimetype ?? null,
+      handleServiceError(
+        error,
+        'UsersService.updateUserAvatarUrl',
+        'Failed to update user avatar URL',
+        {
+          service: 'users',
+          operation: 'updateUserAvatarUrl',
+          userId,
+          context: {
+            hasAvatar: !!avatar,
+            avatarMimeType: avatar?.mimetype ?? null,
+          },
         },
-      });
-
-      logServiceError('UsersService.updateUserAvatarUrl', error);
-      handlePrismaError(error, 'Failed to update user avatar URL');
+      );
     }
   }
 
@@ -262,14 +272,16 @@ export class UsersService {
 
       return { message: 'User deleted successfully' };
     } catch (error) {
-      captureServiceError(error, {
-        service: 'users',
-        operation: 'deleteUser',
-        userId,
-      });
-
-      logServiceError('UsersService.deleteUser', error);
-      handlePrismaError(error, 'Failed to delete user');
+      handleServiceError(
+        error,
+        'UsersService.deleteUser',
+        'Failed to delete user',
+        {
+          service: 'users',
+          operation: 'deleteUser',
+          userId,
+        },
+      );
     }
   }
 }

@@ -97,7 +97,7 @@ describe('PublicService', () => {
     await expect(
       service.getUserByUsername({ username: '' } as any),
     ).rejects.toBeInstanceOf(BadRequestException);
-    expect(captureServiceError).toHaveBeenCalled();
+    expect(captureServiceError).not.toHaveBeenCalled();
     expect(logServiceError).toHaveBeenCalled();
   });
 });
